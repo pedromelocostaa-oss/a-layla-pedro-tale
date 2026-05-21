@@ -133,12 +133,13 @@
 }
 
 @layer base {
-  * {
-    border-color: var(--color-border);
+  html, body {
+    background-color: #121212;
+    color: #ffffff;
+    font-family: 'Nunito', system-ui, sans-serif;
   }
 
-  body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
-  }
+  ::-webkit-scrollbar { width: 0; height: 0; }
+  * { scrollbar-width: none; }
 }
+
