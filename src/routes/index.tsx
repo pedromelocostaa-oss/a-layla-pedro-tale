@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import coupleFestival from "../assets/couple-festival.jpg";
 import coupleDinner from "../assets/couple-dinner.jpg";
 
@@ -18,17 +18,26 @@ const MESSAGE_PREVIEW =
   "Pedro ainda não escreveu a mensagem... ✨ Mas vai ser a mais linda do mundo quando chegar!";
 const FULL_MESSAGE = `[Pedro escreve aqui a mensagem especial para a Layla]`;
 
-const achievements = [
-  { emoji: "💪", name: "Superamos Momentos Difíceis", color: "#f59e0b" },
-  { emoji: "🔄", name: "Superamos um Término", color: "#ef4444" },
-  { emoji: "🥂", name: "10 Reveillons Juntos", color: "#a855f7" },
-  { emoji: "🏖️", name: "Amamos o Mesmo Lugar: Cumuruxatiba", color: "#38bdf8" },
-  { emoji: "✈️", name: "1ª Viagem Juntos", color: "#60a5fa" },
-  { emoji: "🌍", name: "1ª Viagem Internacional Juntos", color: "#34d399" },
-  { emoji: "👫", name: "1ª Viagem Internacional com Amigos", color: "#818cf8" },
-  { emoji: "⏳", name: "Mais de 2 Meses Sem Parada", color: "#fb923c" },
-  { emoji: "🌴", name: "Viagem para a Califórnia", color: "#f472b6" },
-  { emoji: "🥂", name: "1ª Viagem Juntos a Sós", color: "#facc15" },
+type Achievement = {
+  emoji: string;
+  name: string;
+  color: string;
+  photos: string[];
+};
+
+const achievements: Achievement[] = [
+  { emoji: "💪", name: "Superamos Momentos Difíceis", color: "#f59e0b", photos: [] },
+  { emoji: "🔄", name: "Superamos um Término", color: "#ef4444", photos: [] },
+  { emoji: "🥂", name: "10 Reveillons Juntos", color: "#a855f7", photos: [] },
+  { emoji: "🏖️", name: "Amamos o Mesmo Lugar: Cumuruxatiba", color: "#38bdf8", photos: [] },
+  { emoji: "✈️", name: "1ª Viagem Juntos", color: "#60a5fa", photos: [] },
+  { emoji: "🌍", name: "1ª Viagem Internacional Juntos", color: "#34d399", photos: [] },
+  { emoji: "👫", name: "1ª Viagem Internacional com Amigos", color: "#818cf8", photos: [] },
+  { emoji: "⏳", name: "Mais de 2 Meses Sem Parada", color: "#fb923c", photos: [] },
+  { emoji: "🌴", name: "Viagem para a Califórnia", color: "#f472b6", photos: [] },
+  { emoji: "🥂", name: "1ª Viagem Juntos a Sós", color: "#facc15", photos: [] },
+  { emoji: "🏄", name: "1° Kite Trip", color: "#06b6d4", photos: [] },
+  { emoji: "📸", name: "Book de 15", color: "#ec4899", photos: [] },
 ];
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -683,7 +692,7 @@ function Main({
               fontWeight: 700,
             }}
           >
-            10/10
+            12/12
           </div>
         </div>
         <div
@@ -917,10 +926,239 @@ function MessageScreen({ onBack }: { onBack: () => void }) {
   );
 }
 
+/* ============ GALERIA ============ */
+function GalleryModal({
+  achievement,
+  onClose,
+}: {
+  achievement: Achievement;
+  onClose: () => void;
+}) {
+  const [current, setCurrent] = useState(0);
+  const startX = useRef<number | null>(null);
+
+  const hasPhotos = achievement.photos.length > 0;
+
+  function onTouchStart(e: React.TouchEvent) {
+    startX.current = e.touches[0].clientX;
+  }
+
+  function onTouchEnd(e: React.TouchEvent) {
+    if (startX.current === null) return;
+    const dx = e.changedTouches[0].clientX - startX.current;
+    if (Math.abs(dx) < 40) return;
+    if (dx < 0) setCurrent((c) => Math.min(c + 1, achievement.photos.length - 1));
+    else setCurrent((c) => Math.max(c - 1, 0));
+    startX.current = null;
+  }
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.97)",
+        zIndex: 200,
+        display: "flex",
+        flexDirection: "column",
+        maxWidth: 390,
+        margin: "0 auto",
+      }}
+    >
+      {/* Header */}
+      <div
+        style={{
+          padding: "16px 20px",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          borderBottom: "1px solid #222",
+          flexShrink: 0,
+        }}
+      >
+        <button
+          onClick={onClose}
+          style={{
+            width: 34,
+            height: 34,
+            borderRadius: "50%",
+            background: "#2a2a2a",
+            color: "#fff",
+            border: "none",
+            fontSize: 16,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          ✕
+        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 22 }}>{achievement.emoji}</span>
+          <div>
+            <div style={{ color: "#fff", fontSize: 14, fontWeight: 800 }}>
+              {achievement.name}
+            </div>
+            {hasPhotos && (
+              <div style={{ color: "#888", fontSize: 11 }}>
+                {current + 1} / {achievement.photos.length}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      {hasPhotos ? (
+        <>
+          <div
+            style={{ flex: 1, position: "relative", overflow: "hidden" }}
+            onTouchStart={onTouchStart}
+            onTouchEnd={onTouchEnd}
+          >
+            <img
+              src={achievement.photos[current]}
+              alt={`${achievement.name} ${current + 1}`}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "contain",
+                display: "block",
+              }}
+            />
+            {achievement.photos.length > 1 && (
+              <>
+                <button
+                  onClick={() => setCurrent((c) => Math.max(c - 1, 0))}
+                  disabled={current === 0}
+                  style={{
+                    position: "absolute",
+                    left: 10,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "rgba(0,0,0,0.5)",
+                    border: "none",
+                    color: "#fff",
+                    borderRadius: "50%",
+                    width: 36,
+                    height: 36,
+                    fontSize: 18,
+                    cursor: "pointer",
+                    opacity: current === 0 ? 0.3 : 1,
+                  }}
+                >
+                  ‹
+                </button>
+                <button
+                  onClick={() =>
+                    setCurrent((c) =>
+                      Math.min(c + 1, achievement.photos.length - 1)
+                    )
+                  }
+                  disabled={current === achievement.photos.length - 1}
+                  style={{
+                    position: "absolute",
+                    right: 10,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "rgba(0,0,0,0.5)",
+                    border: "none",
+                    color: "#fff",
+                    borderRadius: "50%",
+                    width: 36,
+                    height: 36,
+                    fontSize: 18,
+                    cursor: "pointer",
+                    opacity:
+                      current === achievement.photos.length - 1 ? 0.3 : 1,
+                  }}
+                >
+                  ›
+                </button>
+              </>
+            )}
+          </div>
+          {/* Dots */}
+          {achievement.photos.length > 1 && (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                gap: 6,
+                padding: "14px 0",
+                flexShrink: 0,
+              }}
+            >
+              {achievement.photos.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrent(i)}
+                  style={{
+                    width: i === current ? 18 : 6,
+                    height: 6,
+                    borderRadius: 3,
+                    background: i === current ? achievement.color : "#444",
+                    border: "none",
+                    padding: 0,
+                    cursor: "pointer",
+                    transition: "width 0.2s ease, background 0.2s ease",
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </>
+      ) : (
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 16,
+            padding: 32,
+            textAlign: "center",
+          }}
+        >
+          <div
+            style={{
+              width: 90,
+              height: 90,
+              borderRadius: "50%",
+              border: `3px solid ${achievement.color}`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 40,
+            }}
+          >
+            {achievement.emoji}
+          </div>
+          <div style={{ color: "#fff", fontSize: 18, fontWeight: 800 }}>
+            {achievement.name}
+          </div>
+          <div style={{ color: "#666", fontSize: 14, lineHeight: 1.5 }}>
+            As fotos dessa conquista ainda vão ser adicionadas 📷
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ============ TELA 4 ============ */
 function ConquistasScreen({ onBack }: { onBack: () => void }) {
+  const [gallery, setGallery] = useState<Achievement | null>(null);
+
   return (
     <div style={{ background: "#121212", minHeight: "100vh" }}>
+      {gallery && (
+        <GalleryModal achievement={gallery} onClose={() => setGallery(null)} />
+      )}
+
       <div
         style={{
           position: "sticky",
@@ -965,7 +1203,7 @@ function ConquistasScreen({ onBack }: { onBack: () => void }) {
             marginBottom: 8,
           }}
         >
-          <span>10/10</span>
+          <span>12/12</span>
           <span>100%</span>
         </div>
         <div
@@ -996,7 +1234,7 @@ function ConquistasScreen({ onBack }: { onBack: () => void }) {
             marginBottom: 14,
           }}
         >
-          CONQUISTADAS (10)
+          CONQUISTADAS (12)
         </div>
         <div
           style={{
@@ -1008,6 +1246,7 @@ function ConquistasScreen({ onBack }: { onBack: () => void }) {
           {achievements.map((a) => (
             <div
               key={a.name}
+              onClick={() => setGallery(a)}
               style={{
                 background: "#1e1e1e",
                 border: `2px solid ${a.color}`,
