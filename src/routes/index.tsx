@@ -23,6 +23,7 @@ type Achievement = {
   name: string;
   color: string;
   photos: string[];
+  locked?: boolean;
 };
 
 const achievements: Achievement[] = [
@@ -38,6 +39,15 @@ const achievements: Achievement[] = [
   { emoji: "🥂", name: "1ª Viagem Juntos a Sós", color: "#facc15", photos: [] },
   { emoji: "🏄", name: "1° Kite Trip", color: "#06b6d4", photos: [] },
   { emoji: "📸", name: "Book de 15", color: "#ec4899", photos: [] },
+  // — em breve —
+  { emoji: "💍", name: "Noivado", color: "#f9a8d4", photos: [], locked: true },
+  { emoji: "👰", name: "Casamento", color: "#fde68a", photos: [], locked: true },
+  { emoji: "🎉", name: "Despedida de Solteiro", color: "#86efac", photos: [], locked: true },
+  { emoji: "👶", name: "Primeiro Filho", color: "#a5f3fc", photos: [], locked: true },
+  { emoji: "🌿", name: "Viagem para a Costa Rica", color: "#6ee7b7", photos: [], locked: true },
+  { emoji: "🏠", name: "Nossa Casa Própria", color: "#c4b5fd", photos: [], locked: true },
+  { emoji: "🎂", name: "15 Anos Juntos", color: "#fca5a5", photos: [], locked: true },
+  { emoji: "🌏", name: "Volta ao Mundo Juntos", color: "#93c5fd", photos: [], locked: true },
 ];
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -692,7 +702,7 @@ function Main({
               fontWeight: 700,
             }}
           >
-            12/12
+            12/20
           </div>
         </div>
         <div
@@ -1153,6 +1163,11 @@ function GalleryModal({
 function ConquistasScreen({ onBack }: { onBack: () => void }) {
   const [gallery, setGallery] = useState<Achievement | null>(null);
 
+  const unlocked = achievements.filter((a) => !a.locked);
+  const locked = achievements.filter((a) => a.locked);
+  const total = achievements.length;
+  const pct = Math.round((unlocked.length / total) * 100);
+
   return (
     <div style={{ background: "#121212", minHeight: "100vh" }}>
       {gallery && (
@@ -1203,8 +1218,8 @@ function ConquistasScreen({ onBack }: { onBack: () => void }) {
             marginBottom: 8,
           }}
         >
-          <span>12/12</span>
-          <span>100%</span>
+          <span>{unlocked.length}/{total}</span>
+          <span>{pct}%</span>
         </div>
         <div
           style={{
@@ -1216,15 +1231,17 @@ function ConquistasScreen({ onBack }: { onBack: () => void }) {
         >
           <div
             style={{
-              width: "100%",
+              width: `${pct}%`,
               height: "100%",
               background: "linear-gradient(90deg, #a855f7, #60a5fa)",
+              transition: "width 0.6s ease",
             }}
           />
         </div>
       </div>
 
       <div style={{ padding: "0 20px" }}>
+        {/* — conquistadas — */}
         <div
           style={{
             color: "#888",
@@ -1234,16 +1251,17 @@ function ConquistasScreen({ onBack }: { onBack: () => void }) {
             marginBottom: 14,
           }}
         >
-          CONQUISTADAS (12)
+          CONQUISTADAS ({unlocked.length})
         </div>
         <div
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(3, 1fr)",
             gap: 10,
+            marginBottom: 28,
           }}
         >
-          {achievements.map((a) => (
+          {unlocked.map((a) => (
             <div
               key={a.name}
               onClick={() => setGallery(a)}
@@ -1281,6 +1299,79 @@ function ConquistasScreen({ onBack }: { onBack: () => void }) {
             </div>
           ))}
         </div>
+
+        {/* — em breve — */}
+        <div
+          style={{
+            color: "#555",
+            fontSize: 11,
+            fontWeight: 800,
+            letterSpacing: "1.5px",
+            marginBottom: 14,
+          }}
+        >
+          EM BREVE ({locked.length})
+        </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: 10,
+          }}
+        >
+          {locked.map((a) => (
+            <div
+              key={a.name}
+              style={{
+                background: "#161616",
+                border: `2px solid #2a2a2a`,
+                borderRadius: 16,
+                padding: "16px 6px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 8,
+                opacity: 0.45,
+                filter: "grayscale(0.6)",
+                position: "relative",
+                overflow: "hidden",
+              }}
+            >
+              {/* shimmer */}
+              <div
+                aria-hidden
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background:
+                    "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.04) 50%, transparent 60%)",
+                  backgroundSize: "200% 100%",
+                  animation: "shimmer 2.4s infinite linear",
+                }}
+              />
+              <div style={{ fontSize: 26 }}>{a.emoji}</div>
+              <div style={{ fontSize: 12 }}>🔒</div>
+              <div
+                style={{
+                  color: "#666",
+                  fontSize: 10,
+                  fontWeight: 800,
+                  textAlign: "center",
+                  lineHeight: 1.3,
+                }}
+              >
+                {a.name}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <style>{`
+          @keyframes shimmer {
+            0%   { background-position: -200% 0; }
+            100% { background-position:  200% 0; }
+          }
+        `}</style>
 
         <button
           style={{
