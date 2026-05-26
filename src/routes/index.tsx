@@ -15,59 +15,73 @@ const START_DATE = new Date("2014-11-14T00:00:00");
 type Screen = "landing" | "main" | "message" | "conquistas";
 
 const MESSAGE_PREVIEW =
-  "Tinha um dia comum, daqueles que você não espera nada. Eu estava dando rolê no shopping, encontrei a Nanda do nada e parei pra conversar. Você estava na mesa com ela e outras amigas. Naquele momento, você me viu. Eu não te vi...";
-const FULL_MESSAGE = `Capítulo 1 — Você me viu primeiro
+  "Tinha um dia comum, daqueles que você não espera nada. Eu estava dando rolê no shopping, encontrei a Nanda do nada e parei pra conversar. Você estava na mesa com ela e outras amigas. Você me viu. Eu não te vi...";
+const FULL_MESSAGE = `Capítulo 1: Você me viu primeiro
 
-Tinha um dia comum, daqueles que você não espera nada.
-Eu estava dando rolê no shopping, encontrei a Nanda do nada e parei pra conversar. Você estava na mesa com ela e outras amigas. Naquele momento, você me viu. Eu não te vi.
-Mas você não deixou aquilo passar.
-Me adicionou no Facebook e começou a puxar assunto, batendo papo do nada, com aquela leveza sua que é difícil de resistir. Fui respondendo, fui gostando, fui querendo conversar mais. Você é tão gente boa que é impossível não gostar. E foi assim que tudo começou — por iniciativa sua, numa mesa de shopping em que eu nem te notei.
-Sorte a minha que você é mais atenta do que eu.
+Tinha um dia comum, daquele jeito que você não espera nada de especial.
+
+Eu estava dando rolê no shopping, encontrei a Nanda do nada e parei pra conversar. Você estava na mesa com ela e outras amigas. Você me viu. Eu não te vi.
+
+Mas você não deixou aquilo passar. Me adicionou no Facebook e começou a puxar assunto, batendo papo do nada, com aquela leveza sua que é difícil de resistir. Fui respondendo, fui gostando, fui querendo conversar mais. Você é tão gente boa que é impossível não gostar.
+
+Foi assim que tudo começou, por iniciativa sua, numa mesa de shopping em que eu nem te notei. Sorte a minha que você é mais atenta do que eu.
 
 
-Capítulo 2 — A roupa de vôlei
+Capítulo 2: A roupa de vôlei
 
 Eu estava saindo pra uma festa quando decidi.
-Subi pro apartamento do meu amigo, tomei banho, escovei o dente — sim, escovei o dente com intenção — e desci. Você tinha acabado de jogar vôlei e ainda estava com aquela roupa.
-Eu te peguei pela mão, levei até o lado do elevador, e a gente ficou pela primeira vez.
-Lembro exatamente do que senti. Achei você bonita, gostei demais de ter ficado com você. Mas não quis dar o braço a torcer. Queria ser aquele cara que não se apega, sabe como é. A questão é que, no fundo, eu já gostava muito de você — só não admitia nem pra mim mesmo.
-A gente continuou se encontrando todo final de semana. Eu ia pra casa do Bubs, você ia pra casa da Nanda, e os dois moravam no mesmo prédio. Conversávamos pelo Snapchat, pelo Facebook. Nas férias, eu pegava ônibus pro Belvedere e a gente andava de skate. Ficávamos do lado de fora da Perse — você falava pros seus pais que estava lá e a gente ficava na rua, conversando, andando, se pegando.
+
+Subi pro apartamento do meu amigo, tomei banho, escovei o dente (sim, escovei o dente com intenção) e desci. Você tinha acabado de jogar vôlei e ainda estava com aquela roupa. Eu te peguei pela mão, levei até o lado do elevador, e a gente ficou pela primeira vez.
+
+Lembro exatamente do que senti. Achei você bonita, gostei demais de ter ficado com você. Mas não quis dar o braço a torcer, queria ser aquele cara que não se apega, sabe como é. Só que no fundo eu já gostava muito de você, só não admitia nem pra mim mesmo.
+
+A gente continuou se encontrando todo final de semana. Eu ia pra casa do Bubs, você ia pra casa da Nanda, e os dois moravam no mesmo prédio. Conversávamos pelo Snapchat, pelo Facebook. Nas férias eu pegava ônibus pro Belvedere e a gente andava de skate. Ficávamos do lado de fora da Perse, você falava pros seus pais que estava lá e a gente ficava na rua, conversando, andando, se pegando.
+
 Essa época foi muito boa. Eu só pensava em você.
 
 
-Capítulo 3 — As histórias que a gente sempre vai contar
+Capítulo 3: As histórias que a gente sempre vai contar
 
 Onze anos dão muita história. Essas são algumas que eu nunca vou esquecer.
 
-O seu pai no bar. Eu estava muito de boa, tranquilo, quando seu pai chegou do nada trocando ideia comigo. A conversa foi, foi — e então ele apertou meu saco. Literalmente. Fiquei completamente sem reação, não sabia o que falar, o que fazer, o que pensar. Conversamos mais um pouco e eu saí. O melhor? Ele nunca pediu desculpas. Até hoje acho que ele fez isso de propósito pra me testar.
+O seu pai no bar. Eu estava muito de boa, tranquilo, quando seu pai chegou do nada trocando ideia comigo. A conversa foi indo e então ele apertou meu saco. Literalmente. Fiquei completamente sem reação, não sabia o que falar, o que fazer, o que pensar. Conversamos mais um pouco e eu saí. O melhor é que ele nunca pediu desculpas. Até hoje acho que ele fez isso de propósito pra me testar.
 
 A barraca. Nossa primeira vez foi especial por dois motivos: primeiro porque foi com você, segundo porque foi numa barraca de acampamento. Eu saí da minha, fui pra sua, e o resto a gente sabe. Não existe uma história mais nossa do que essa.
 
-Dubai. Dormindo no mesmo quarto que sua tia — aquele clima de missão impossível — e a gente foi pro banheiro. Até hoje não sei como não fomos descobertos.
+Dubai. Dormindo no mesmo quarto que sua tia, aquele clima de missão impossível, e a gente foi pro banheiro. Até hoje não sei como não fomos descobertos.
 
-A loja no Atlanta. Eu chegava de ônibus do trabalho, te encontrava na loja, ficava um pouco te ajudando, e a gente ia junto pra faculdade em Milton Campos. Aos sábados ficávamos contando os minutos pra dar meio-dia e a gente poder ir embora. Tenho que ser honesto: quando lembro dessa época, a primeira coisa que me vem é o quanto você era brava. Mas passava.
+A loja no Atlanta. Eu chegava de ônibus do trabalho, te encontrava na loja, ficava um pouco te ajudando e a gente ia junto pra faculdade em Milton Campos. Aos sábados ficávamos contando os minutos pra dar meio-dia e a gente poder ir embora. Tenho que ser honesto: quando lembro dessa época, a primeira coisa que me vem é o quanto você era brava. Mas passava.
 
-As viagens. Austrália. Miami. Califórnia. O sertão nordestino — aquela viagem maluca que só a gente faria. Petrópolis pra buscar a Mel. Cada uma com a sua história, cada uma construindo mais um pedaço do que somos.
+As viagens. Austrália. Miami. Califórnia. O sertão nordestino, aquela viagem maluca que só a gente faria. Petrópolis pra buscar a Mel. Cada uma com a sua história, cada uma construindo mais um pedaço do que somos.
 
 O show do Alok no BHDF. Só nós dois. Que noite boa foi aquela.
 
 
-Capítulo 4 — Quem você é
+Capítulo 4: Quem você é
 
 Tenho muito a te falar sobre o que enxergo em você.
-Você é, antes de tudo, gente boa. De verdade, daquele jeito raro. Feliz com a vida, com as pessoas, com as pequenas coisas. Pra mim isso vale mais do que qualquer outra coisa — é o que mais importa em uma pessoa.
-Além disso você é linda, sabe muito sobre muita coisa — aprendeu bem com sua mãe — e é cuidadosa de um jeito que não é comum. Você está sempre presente. Sempre.
-Estivemos juntos em todas as fases: escola, faculdade, primeiro emprego, crescimento. A gente se conhece como ninguém. Essa conexão que temos é uma coisa bizarra de boa — não tem como explicar pra quem está de fora.
+
+Você é, antes de tudo, gente boa. De verdade, daquele jeito raro. Feliz com a vida, com as pessoas, com as pequenas coisas. Pra mim isso vale mais do que qualquer outra coisa, é o que mais importa em uma pessoa.
+
+Além disso você é linda, sabe muito sobre muita coisa (aprendeu bem com sua mãe) e é cuidadosa de um jeito que não é comum. Você está sempre presente. Sempre.
+
+Estivemos juntos em todas as fases: escola, faculdade, primeiro emprego, crescimento. A gente se conhece como ninguém. Essa conexão que temos é uma coisa bizarra de boa, não tem como explicar pra quem está de fora.
+
 Você definitivamente é minha escolha. Todo dia.
 
 
-Capítulo 5 — O que vem pela frente
+Capítulo 5: O que vem pela frente
 
 Onze anos e eu ainda tenho muita coisa pra viver com você.
-Já passamos por muita coisa boa e por alguns momentos muito difíceis também. É assim que funciona — a vida não dá desconto pra ninguém. Mas a gente está aqui, crescendo, aprendendo a ser homem e mulher de verdade.
+
+Já passamos por muita coisa boa e por alguns momentos muito difíceis também. É assim que funciona, a vida não dá desconto pra ninguém. Mas a gente está aqui, crescendo, aprendendo a ser homem e mulher de verdade.
+
 Somos mais do que namorados. Somos parceiros.
-Ainda temos muito pra fazer, pra construir, pra melhorar. Mas já posso dizer que a nossa história está escrita com felicidade, amor e — principalmente — muito aprendizado.
+
+Ainda temos muito pra fazer, pra construir, pra melhorar. Mas já posso dizer que a nossa história está escrita com felicidade, amor e muito aprendizado.
+
 Vamos continuar, juntos, pra tudo que vier.
+
 Te amo muito. Muito mesmo.`;
 
 type Achievement = {
