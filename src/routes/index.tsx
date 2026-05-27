@@ -1017,10 +1017,10 @@ const PAGE_SIZE = 24;
 
 function PageGallery() {
   const { current, next } = useShuffledPhotos();
-  const [lightbox, setLightbox]   = useState<number | null>(null);
-  const [lbPhoto,  setLbPhoto]    = useState<Photo | null>(null);
-  // quantos itens estão visíveis por categoria
-  const [visible, setVisible]     = useState<Record<string, number>>({});
+  const [lightbox,    setLightbox]    = useState<number | null>(null);
+  const [lbPhoto,     setLbPhoto]     = useState<Photo | null>(null);
+  const [randomOpen,  setRandomOpen]  = useState(false);
+  const [visible,     setVisible]     = useState<Record<string, number>>({});
   const txStart = useRef(0);
 
   function visibleCount(label: string, total: number) {
@@ -1038,17 +1038,17 @@ function PageGallery() {
   function goPrev() {
     setLightbox(i => {
       if (i === null) return null;
-      const next = (i - 1 + ALL_PHOTOS.length) % ALL_PHOTOS.length;
-      setLbPhoto(ALL_PHOTOS[next]);
-      return next;
+      const n = (i - 1 + ALL_PHOTOS.length) % ALL_PHOTOS.length;
+      setLbPhoto(ALL_PHOTOS[n]);
+      return n;
     });
   }
   function goNext() {
     setLightbox(i => {
       if (i === null) return null;
-      const next = (i + 1) % ALL_PHOTOS.length;
-      setLbPhoto(ALL_PHOTOS[next]);
-      return next;
+      const n = (i + 1) % ALL_PHOTOS.length;
+      setLbPhoto(ALL_PHOTOS[n]);
+      return n;
     });
   }
   function onTouchStart(e: React.TouchEvent) { txStart.current = e.touches[0].clientX; }
@@ -1062,20 +1062,61 @@ function PageGallery() {
     <section style={{ borderBottom: "1px solid rgba(255,255,255,.06)" }}>
 
       {/* Header */}
-      <div style={{ padding: "40px 20px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div style={{ padding: "40px 20px 28px", textAlign: "center" }}>
         <SecTitle>nossas memórias</SecTitle>
-        <button onClick={next} style={{ background: "rgba(255,255,255,.07)", border: "none", borderRadius: 50, padding: "8px 14px", color: "rgba(255,255,255,.55)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: MO, whiteSpace: "nowrap" }}>
-          ↺ aleatória
+        <p style={{ color: "rgba(255,255,255,.35)", fontSize: 14, lineHeight: 1.65, marginBottom: 22, fontFamily: MO }}>
+          São mais de {ALL_PHOTOS.length} fotos e vídeos de momentos que a gente nunca vai esquecer
+        </p>
+        <button
+          onClick={() => { setRandomOpen(true); next(); }}
+          style={{
+            background: `linear-gradient(135deg,${PINK},#8B1A3C)`,
+            border: "none", borderRadius: 50,
+            padding: "14px 28px",
+            color: "#fff", fontSize: 14, fontWeight: 700,
+            cursor: "pointer", fontFamily: MO,
+            boxShadow: `0 6px 24px ${PINK}44`,
+            letterSpacing: "0.3px",
+          }}
+        >
+          ✨ Ver fotos em ordem aleatória
         </button>
       </div>
 
-      {/* Destaque aleatório */}
-      <div onClick={() => openLb(current)} style={{ margin: "0 0 2px", position: "relative", height: 200, overflow: "hidden", cursor: "pointer", background: "#111" }}>
-        <PhotoImg photo={current} fill />
-        <div style={{ position: "absolute", inset: "auto 0 0 0", padding: "48px 16px 14px", background: "linear-gradient(transparent,rgba(0,0,0,.75))" }}>
-          <p style={{ color: "#fff", fontSize: 18, fontFamily: PF, fontStyle: "italic" }}>{current.legenda}</p>
+      {/* Random Viewer — tela cheia */}
+      {randomOpen && (
+        <div style={{ position: "fixed", inset: 0, background: "#000", zIndex: 250, display: "flex", flexDirection: "column", maxWidth: 430, margin: "0 auto" }}>
+          {/* Fechar */}
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, padding: "16px 20px", display: "flex", justifyContent: "flex-end", zIndex: 10, background: "linear-gradient(rgba(0,0,0,.6),transparent)" }}>
+            <button
+              onClick={() => setRandomOpen(false)}
+              style={{ background: "rgba(255,255,255,.15)", border: "none", borderRadius: "50%", width: 38, height: 38, color: "#fff", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+            >✕</button>
+          </div>
+
+          {/* Foto */}
+          <div style={{ flex: 1, position: "relative" }}>
+            <PhotoImg photo={current} fill contain />
+          </div>
+
+          {/* Botão próxima */}
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "32px 24px 52px", background: "linear-gradient(transparent,rgba(0,0,0,.85))", display: "flex", justifyContent: "center" }}>
+            <button
+              onClick={next}
+              style={{
+                background: PINK, border: "none", borderRadius: 50,
+                padding: "15px 36px",
+                color: "#fff", fontSize: 15, fontWeight: 700,
+                cursor: "pointer", fontFamily: MO,
+                boxShadow: `0 6px 28px ${PINK}55`,
+                display: "flex", alignItems: "center", gap: 10,
+              }}
+            >
+              <span style={{ fontSize: 18 }}>↺</span> Ver outra foto
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Grade por categoria */}
       {PHOTO_CATEGORIES.map(cat => {
