@@ -37,12 +37,13 @@ const STORY_SLIDES = [
   },
   {
     type: "photo" as const,
-    src: "/fotos/inicio.jpg",
+    src: "/fotos/inicio.png",
     fallbackSrc: coupleDinner,
     label: "14 de novembro de 2014",
     sublabel: "quando tudo começou",
     accent: PINK,
     grad: "linear-gradient(160deg,#2d0a18,#1a0a12)",
+    fitMode: "contain" as const,
   },
   {
     type: "photo" as const,
@@ -776,7 +777,7 @@ function SlidePhoto({ config }: { config: PhotoSlideConfig }) {
           src={src}
           alt={config.label}
           onError={handleError}
-          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+          style={{ width: "100%", height: "100%", objectFit: (config as any).fitMode ?? "cover", display: "block" }}
         />
       ) : (
         <div style={{
