@@ -664,7 +664,6 @@ function FullPage({ onBackToStories }: { onBackToStories: () => void }) {
       <PageConquistas />
       <PageGallery />
       <PageHistoria />
-      <PageBuilt />
       <PageFim />
 
       {showTop && (
@@ -768,47 +767,103 @@ function AchCard({ a, locked }: { a: Achievement; locked?: boolean }) {
 
 // ── Gallery ───────────────────────────────────────────────────────────────────
 
+// Padrão de linhas estilo Google Photos / iPhone:
+// Cada linha define os índices das fotos e o "flex" de cada uma (largura relativa)
+const GALLERY_ROWS: { flex: number }[][] = [
+  [{ flex: 2 }, { flex: 1 }],          // linha 1: grande + pequena
+  [{ flex: 1 }, { flex: 1 }, { flex: 1 }],  // linha 2: três iguais
+  [{ flex: 1 }, { flex: 2 }],          // linha 3: pequena + grande
+  [{ flex: 1 }, { flex: 1 }, { flex: 1 }],  // linha 4: três iguais
+];
+const ROW_H = 130; // altura fixa de cada linha (px)
+const GAP   = 2;   // gap entre fotos (px)
+
 function PageGallery() {
   const { current, next } = useShuffledPhotos();
-  const [spotlight, setSpotlight] = useState<Photo | null>(null);
+  const [lightbox, setLightbox] = useState<number | null>(null);
+  const txStart = useRef(0);
+
+  // distribui as fotos pelas linhas
+  let photoIdx = 0;
+  const rows = GALLERY_ROWS.map(row => {
+    const cells = row.map(cell => {
+      const photo = ALL_PHOTOS[photoIdx % ALL_PHOTOS.length];
+      photoIdx++;
+      return { ...cell, photo };
+    });
+    return cells;
+  });
+
+  function openLightbox(idx: number) { setLightbox(idx); }
+  function closeLightbox() { setLightbox(null); }
+  function prevPhoto() { setLightbox(i => i !== null ? (i - 1 + ALL_PHOTOS.length) % ALL_PHOTOS.length : null); }
+  function nextPhoto() { setLightbox(i => i !== null ? (i + 1) % ALL_PHOTOS.length : null); }
+
+  function onTouchStart(e: React.TouchEvent) { txStart.current = e.touches[0].clientX; }
+  function onTouchEnd(e: React.TouchEvent) {
+    const dx = e.changedTouches[0].clientX - txStart.current;
+    if (Math.abs(dx) < 40) return;
+    if (dx < 0) nextPhoto(); else prevPhoto();
+  }
 
   return (
-    <section style={{ padding: "40px 20px", borderBottom: "1px solid rgba(255,255,255,.06)" }}>
-      <SecTitle>nossas memórias</SecTitle>
-
-      {/* Random photo highlight */}
-      <div style={{ marginBottom: 16, borderRadius: 16, overflow: "hidden", position: "relative", aspectRatio: "4/3", background: "#1a1a2e", cursor: "pointer" }} onClick={() => setSpotlight(current)}>
-        <PhotoImg photo={current} fill />
-        <div style={{ position: "absolute", inset: "auto 0 0 0", padding: "52px 18px 18px", background: "linear-gradient(transparent,rgba(0,0,0,.78))" }}>
-          <p style={{ color: "rgba(255,255,255,.5)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 4 }}>memória</p>
-          <p style={{ color: "#fff", fontSize: 20, fontWeight: 700, fontFamily: PF }}>{current.legenda}</p>
-        </div>
+    <section style={{ borderBottom: "1px solid rgba(255,255,255,.06)" }}>
+      {/* Header */}
+      <div style={{ padding: "40px 20px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <SecTitle>nossas memórias</SecTitle>
+        <button
+          onClick={next}
+          style={{ background: "rgba(255,255,255,.07)", border: "none", borderRadius: 50, padding: "8px 14px", color: "rgba(255,255,255,.6)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: MO, whiteSpace: "nowrap" }}
+        >
+          ↺ aleatória
+        </button>
       </div>
 
-      <button onClick={next} style={{ width: "100%", background: "rgba(255,255,255,.05)", border: `1.5px solid ${PURPLE}`, borderRadius: 12, padding: "13px 20px", color: "#AFA9EC", fontSize: 14, fontWeight: 700, cursor: "pointer", marginBottom: 20 }}>
-        ↺ próxima memória aleatória
-      </button>
-
-      {/* Full grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-        {ALL_PHOTOS.map((p, i) => (
-          <div key={i} onClick={() => setSpotlight(p)} style={{ borderRadius: 12, overflow: "hidden", aspectRatio: "1", background: "#1a1a2e", cursor: "pointer", position: "relative" }}>
-            <PhotoImg photo={p} fill />
-            <div style={{ position: "absolute", inset: "auto 0 0 0", padding: "20px 8px 8px", background: "linear-gradient(transparent,rgba(0,0,0,.7))", color: "#fff", fontSize: 10, fontWeight: 700 }}>
-              {p.legenda}
-            </div>
+      {/* Mosaic grid */}
+      <div style={{ display: "flex", flexDirection: "column", gap: GAP, padding: `0 0 ${GAP}px` }}>
+        {rows.map((row, rowIdx) => (
+          <div key={rowIdx} style={{ display: "flex", gap: GAP, height: ROW_H }}>
+            {row.map((cell, cellIdx) => {
+              const globalIdx = ALL_PHOTOS.indexOf(cell.photo);
+              return (
+                <div
+                  key={cellIdx}
+                  onClick={() => openLightbox(globalIdx >= 0 ? globalIdx : 0)}
+                  style={{ flex: cell.flex, position: "relative", overflow: "hidden", cursor: "pointer", background: "#111" }}
+                >
+                  <PhotoImg photo={cell.photo} fill />
+                </div>
+              );
+            })}
           </div>
         ))}
       </div>
 
       {/* Lightbox */}
-      {spotlight && (
-        <div onClick={() => setSpotlight(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.96)", zIndex: 200, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", maxWidth: 430, margin: "0 auto", padding: 20 }}>
-          <div style={{ width: "100%", borderRadius: 16, overflow: "hidden", aspectRatio: "4/3", background: "#1a1a2e", position: "relative" }}>
-            <PhotoImg photo={spotlight} fill />
+      {lightbox !== null && (
+        <div
+          style={{ position: "fixed", inset: 0, background: "#000", zIndex: 200, display: "flex", flexDirection: "column", maxWidth: 430, margin: "0 auto" }}
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+        >
+          {/* Top bar */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", flexShrink: 0, background: "rgba(0,0,0,.6)", backdropFilter: "blur(8px)" }}>
+            <button onClick={closeLightbox} style={{ background: "rgba(255,255,255,.1)", border: "none", borderRadius: "50%", width: 36, height: 36, color: "#fff", fontSize: 18, cursor: "pointer" }}>✕</button>
+            <span style={{ color: "rgba(255,255,255,.55)", fontSize: 13, fontFamily: MO }}>{lightbox + 1} / {ALL_PHOTOS.length}</span>
+            <div style={{ width: 36 }} />
           </div>
-          <p style={{ color: "rgba(255,255,255,.7)", marginTop: 16, fontSize: 18, fontFamily: PF, fontStyle: "italic" }}>{spotlight.legenda}</p>
-          <p style={{ color: "rgba(255,255,255,.25)", fontSize: 12, marginTop: 8 }}>toque para fechar</p>
+
+          {/* Photo */}
+          <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
+            <PhotoImg photo={ALL_PHOTOS[lightbox]} fill />
+          </div>
+
+          {/* Bottom bar */}
+          <div style={{ padding: "16px 20px 32px", background: "rgba(0,0,0,.6)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+            <button onClick={prevPhoto} disabled={lightbox === 0} style={{ background: "rgba(255,255,255,.1)", border: "none", borderRadius: "50%", width: 40, height: 40, color: "#fff", fontSize: 20, cursor: "pointer", opacity: lightbox === 0 ? .3 : 1 }}>‹</button>
+            <p style={{ color: "#fff", fontSize: 16, fontFamily: PF, fontStyle: "italic", textAlign: "center" }}>{ALL_PHOTOS[lightbox].legenda}</p>
+            <button onClick={nextPhoto} disabled={lightbox === ALL_PHOTOS.length - 1} style={{ background: "rgba(255,255,255,.1)", border: "none", borderRadius: "50%", width: 40, height: 40, color: "#fff", fontSize: 20, cursor: "pointer", opacity: lightbox === ALL_PHOTOS.length - 1 ? .3 : 1 }}>›</button>
+          </div>
         </div>
       )}
     </section>
@@ -861,33 +916,6 @@ function PageHistoria() {
             "Este capítulo ainda está sendo escrito.<br />Em breve, juntos."
           </p>
         </div>
-      </div>
-    </section>
-  );
-}
-
-// ── O que construímos ─────────────────────────────────────────────────────────
-
-function PageBuilt() {
-  const items = [
-    { e: "🐕", t: "A Mel",          d: "nossa cachorrinha, buscada em Petrópolis" },
-    { e: "🤝", t: "Parceiros",      d: "mais do que namorados, somos parceiros"   },
-    { e: "👨‍👩‍👧", t: "Duas Famílias", d: "que viraram uma só ao longo dos anos"     },
-    { e: "📈", t: "Crescimento",    d: "escola, faculdade, carreira — juntos"      },
-    { e: "🌎", t: "4 Países",       d: "e muitos mais pela frente"                },
-    { e: "❤️", t: "11 Anos",        d: "e ainda muita história pra escrever"      },
-  ];
-  return (
-    <section style={{ padding: "40px 20px", borderBottom: "1px solid rgba(255,255,255,.06)" }}>
-      <SecTitle>o que construímos</SecTitle>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-        {items.map(it => (
-          <div key={it.t} style={{ background: "#141428", border: `1px solid ${PURPLE}22`, borderRadius: 16, padding: "16px 14px" }}>
-            <div style={{ fontSize: 26, marginBottom: 8 }}>{it.e}</div>
-            <div style={{ color: "#fff", fontSize: 13, fontWeight: 700, marginBottom: 4, fontFamily: MO }}>{it.t}</div>
-            <div style={{ color: "rgba(255,255,255,.38)", fontSize: 11, lineHeight: 1.45, fontFamily: MO }}>{it.d}</div>
-          </div>
-        ))}
       </div>
     </section>
   );
