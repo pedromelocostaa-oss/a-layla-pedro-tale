@@ -345,6 +345,35 @@ const GCSS = `
     0%   { opacity: 0; transform: scale(.88); }
     100% { opacity: 1; transform: scale(1); }
   }
+  @keyframes slide-from-right {
+    0%   { transform: translateX(100%); opacity: 0; }
+    100% { transform: translateX(0);    opacity: 1; }
+  }
+  @keyframes slide-from-left {
+    0%   { transform: translateX(-100%); opacity: 0; }
+    100% { transform: translateX(0);     opacity: 1; }
+  }
+  @keyframes flash-red {
+    0%,100% { opacity: 0; }
+    25%,75% { opacity: .28; }
+  }
+  @keyframes flash-green {
+    0%,100% { opacity: 0; }
+    25%,75% { opacity: .22; }
+  }
+  @keyframes dot-bounce {
+    0%,100% { transform: scale(1.15); }
+    40%     { transform: scale(1.55); }
+    70%     { transform: scale(.9);   }
+  }
+  @keyframes success-ring {
+    0%   { transform: scale(.4); opacity: .9; }
+    100% { transform: scale(2.6); opacity: 0; }
+  }
+  @keyframes particle-fly {
+    0%   { transform: translate(0,0) rotate(0deg) scale(1); opacity: 1; }
+    100% { transform: translate(var(--px), var(--py)) rotate(var(--pr)) scale(0); opacity: 0; }
+  }
 `;
 
 // ── App root ──────────────────────────────────────────────────────────────────
@@ -402,36 +431,67 @@ function App() {
 
 // ── Lock screen ───────────────────────────────────────────────────────────────
 
+const PIN_PARTICLES = Array.from({ length: 16 }, (_, i) => {
+  const angle = (i / 16) * 360;
+  const dist  = 55 + Math.random() * 55;
+  const rad   = (angle * Math.PI) / 180;
+  return {
+    px: `${Math.round(Math.cos(rad) * dist)}px`,
+    py: `${Math.round(Math.sin(rad) * dist)}px`,
+    pr: `${Math.round((Math.random() - .5) * 360)}deg`,
+    emoji: ["💝","❤️","💖","✨","🩷","💕"][i % 6],
+    delay: (i * 0.04).toFixed(2),
+  };
+});
+
 function LockScreen({ onUnlock }: { onUnlock: () => void }) {
-  const [pin,   setPin]   = useState("");
-  const [error, setError] = useState(false);
+  const [pin,     setPin]     = useState("");
+  const [error,   setError]   = useState(false);
+  const [correct, setCorrect] = useState(false);
 
   function press(d: string) {
-    if (pin.length >= 4) return;
+    if (pin.length >= 4 || correct) return;
     const next = pin + d;
     setPin(next);
     if (next.length === 4) {
       if (next === PIN_CORRECT) {
-        setTimeout(onUnlock, 340);
+        setCorrect(true);
+        setTimeout(onUnlock, 1400);
       } else {
         setError(true);
-        setTimeout(() => { setError(false); setPin(""); }, 700);
+        setTimeout(() => { setError(false); setPin(""); }, 750);
       }
     }
   }
 
-  function del() { setPin(p => p.slice(0, -1)); }
-
-  const dots = Array.from({ length: 4 }, (_, i) => ({
-    filled: i < pin.length,
-    correct: pin === PIN_CORRECT && i < 4,
-  }));
+  function del() { if (!correct) setPin(p => p.slice(0, -1)); }
 
   return (
-    <div style={{ minHeight: "100dvh", background: "#0d0d0d", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-between", padding: "60px 32px 48px", textAlign: "center" }}>
+    <div style={{ minHeight: "100dvh", background: "#0d0d0d", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-between", padding: "60px 32px 48px", textAlign: "center", position: "relative", overflow: "hidden" }}>
+
+      {/* Flash de erro */}
+      {error && <div aria-hidden style={{ position: "fixed", inset: 0, background: "#E24B4A", pointerEvents: "none", zIndex: 5, animation: "flash-red .55s ease both" }} />}
+
+      {/* Flash de acerto */}
+      {correct && <div aria-hidden style={{ position: "fixed", inset: 0, background: GREEN, pointerEvents: "none", zIndex: 5, animation: "flash-green .7s ease both" }} />}
+
+      {/* Anel de sucesso */}
+      {correct && (
+        <div aria-hidden style={{ position: "fixed", top: "40%", left: "50%", width: 100, height: 100, marginLeft: -50, marginTop: -50, borderRadius: "50%", border: `3px solid ${GREEN}`, pointerEvents: "none", zIndex: 6, animation: "success-ring .9s ease both" }} />
+      )}
+
+      {/* Partículas de sucesso */}
+      {correct && PIN_PARTICLES.map((p, i) => (
+        <span key={i} aria-hidden style={{
+          position: "fixed", top: "40%", left: "50%",
+          fontSize: 20, pointerEvents: "none", zIndex: 7,
+          animation: `particle-fly .9s ${p.delay}s ease both`,
+          "--px": p.px, "--py": p.py, "--pr": p.pr,
+        } as React.CSSProperties}>{p.emoji}</span>
+      ))}
 
       {/* Header */}
-      <div style={{ animation: "fade-up .7s ease both" }}>
+      <div style={{ animation: "fade-up .7s ease both", position: "relative", zIndex: 2 }}>
         <div style={{ fontSize: 40, marginBottom: 20 }}>💝</div>
         <h1 style={{ fontFamily: PF, fontSize: 30, fontWeight: 900, color: "#fff", lineHeight: 1.2, marginBottom: 10 }}>
           Retrospectiva<br />dos 11 Anos
@@ -442,60 +502,76 @@ function LockScreen({ onUnlock }: { onUnlock: () => void }) {
       </div>
 
       {/* PIN dots */}
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 24 }}>
-        <div
-          style={{
-            display: "flex", gap: 18,
-            animation: error ? "shake .5s ease" : "none",
-          }}
-        >
-          {dots.map((d, i) => (
-            <div
-              key={i}
-              style={{
-                width: 16, height: 16, borderRadius: "50%",
-                background: error
-                  ? "#E24B4A"
-                  : d.filled
-                    ? pin.length === 4 && pin === PIN_CORRECT
-                      ? GREEN
-                      : "#fff"
-                    : "rgba(255,255,255,.18)",
-                transition: "background .2s, transform .2s",
-                transform: d.filled ? "scale(1.15)" : "scale(1)",
-                boxShadow: d.filled && !error ? `0 0 10px rgba(255,255,255,.3)` : "none",
-              }}
-            />
-          ))}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 24, position: "relative", zIndex: 2 }}>
+        <div style={{ display: "flex", gap: 18, animation: error ? "shake .5s ease" : "none" }}>
+          {Array.from({ length: 4 }, (_, i) => {
+            const filled = i < pin.length;
+            return (
+              <div
+                key={i}
+                style={{
+                  width: 18, height: 18, borderRadius: "50%",
+                  background: correct
+                    ? GREEN
+                    : error
+                      ? "#E24B4A"
+                      : filled ? "#fff" : "rgba(255,255,255,.18)",
+                  transition: "background .25s, box-shadow .25s",
+                  transform: filled && !error ? "scale(1.15)" : "scale(1)",
+                  boxShadow: correct
+                    ? `0 0 14px ${GREEN}cc`
+                    : filled && !error
+                      ? "0 0 10px rgba(255,255,255,.35)"
+                      : "none",
+                  animation: correct ? `dot-bounce .5s ${i * 0.08}s ease both` : "none",
+                }}
+              />
+            );
+          })}
         </div>
-        <p style={{ color: "rgba(255,255,255,.2)", fontSize: 12, letterSpacing: "1px" }}>
-          {error ? "senha incorreta" : "digite 4 números"}
+        <p style={{
+          fontSize: 12, letterSpacing: "1px",
+          color: correct ? GREEN : error ? "#E24B4A" : "rgba(255,255,255,.2)",
+          transition: "color .25s",
+        }}>
+          {correct ? "✓ que saudade dessa data 💝" : error ? "senha incorreta — tente de novo" : "digite 4 números"}
         </p>
       </div>
 
       {/* Keypad */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, width: "100%", maxWidth: 280 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, width: "100%", maxWidth: 280, position: "relative", zIndex: 2 }}>
         {["1","2","3","4","5","6","7","8","9","","0","⌫"].map((k, i) => (
-          k === "" ? (
-            <div key={i} />
-          ) : (
+          k === "" ? <div key={i} /> : (
             <button
               key={i}
               onClick={() => k === "⌫" ? del() : press(k)}
               style={{
                 background: k === "⌫" ? "transparent" : "rgba(255,255,255,.07)",
                 border: k === "⌫" ? "none" : "1px solid rgba(255,255,255,.1)",
-                borderRadius: 14,
-                height: 60,
+                borderRadius: 16, height: 64,
                 color: "#fff",
-                fontSize: k === "⌫" ? 22 : 24,
+                fontSize: k === "⌫" ? 22 : 26,
                 fontWeight: k === "⌫" ? 400 : 300,
                 fontFamily: k === "⌫" ? "inherit" : PF,
                 cursor: "pointer",
-                transition: "background .15s, transform .1s",
+                transition: "background .12s, transform .1s, box-shadow .12s",
               }}
-              onMouseDown={e => (e.currentTarget.style.transform = "scale(.93)")}
-              onMouseUp={e   => (e.currentTarget.style.transform = "scale(1)")}
+              onMouseDown={e => {
+                e.currentTarget.style.transform = "scale(.88)";
+                e.currentTarget.style.background = k === "⌫" ? "rgba(255,255,255,.06)" : "rgba(255,255,255,.18)";
+              }}
+              onMouseUp={e => {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.background = k === "⌫" ? "transparent" : "rgba(255,255,255,.07)";
+              }}
+              onTouchStart={e => {
+                e.currentTarget.style.transform = "scale(.88)";
+                e.currentTarget.style.background = k === "⌫" ? "rgba(255,255,255,.06)" : "rgba(255,255,255,.18)";
+              }}
+              onTouchEnd={e => {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.background = k === "⌫" ? "transparent" : "rgba(255,255,255,.07)";
+              }}
             >
               {k}
             </button>
@@ -563,9 +639,10 @@ function StoriesShell({
 }: {
   slide: number; goSlide: (n: number) => void; goPage: () => void;
 }) {
-  const tx = useRef({ x: 0, y: 0 });
+  const tx  = useRef({ x: 0, y: 0 });
+  const dir = useRef<"right" | "left">("right"); // direção da última transição
 
-  // Preload próximo slide para eliminar delay na transição
+  // Preload próximo slide
   useEffect(() => {
     const next = STORY_SLIDES[slide + 1];
     if (next && next.type === "photo" && next.src) {
@@ -574,12 +651,18 @@ function StoriesShell({
     }
   }, [slide]);
 
+  function advance(n: number) {
+    if (n < 0 || n >= STORY_SLIDES.length) return;
+    dir.current = n > slide ? "right" : "left";
+    goSlide(n);
+  }
+
   function handleTap(e: React.MouseEvent) {
     if ((e.target as HTMLElement).closest("button,iframe,a")) return;
     const x = e.clientX;
     const w = (e.currentTarget as HTMLElement).clientWidth;
-    if (x < w * 0.3) goSlide(slide - 1);
-    else if (slide < STORY_SLIDES.length - 1) goSlide(slide + 1);
+    if (x < w * 0.3) advance(slide - 1);
+    else if (slide < STORY_SLIDES.length - 1) advance(slide + 1);
     else goPage();
   }
 
@@ -592,6 +675,9 @@ function StoriesShell({
     if (slide === STORY_SLIDES.length - 1 && dy > 60 && Math.abs(dy) > Math.abs(dx)) goPage();
   }
 
+  const slideAnim = dir.current === "right" ? "slide-from-right .32s cubic-bezier(.25,.46,.45,.94) both"
+                                             : "slide-from-left  .32s cubic-bezier(.25,.46,.45,.94) both";
+
   return (
     <div
       onClick={handleTap}
@@ -600,7 +686,7 @@ function StoriesShell({
       style={{
         width: "100%", height: "100dvh",
         background: STORY_BKGS[slide] ?? "#0d0d0d",
-        transition: "background .5s ease",
+        transition: "background .4s ease",
         display: "flex", flexDirection: "column",
         position: "relative", overflow: "hidden", userSelect: "none",
       }}
@@ -608,12 +694,15 @@ function StoriesShell({
       <StoryProgress current={slide} total={STORY_SLIDES.length} />
 
       <div style={{ flex: 1, overflow: "hidden", position: "relative" }}>
-        {(() => {
-          const s = STORY_SLIDES[slide];
-          if (s.type === "music") return <SlideMusicIntro />;
-          if (s.type === "photo") return <SlidePhoto config={s} />;
-          if (s.type === "end")   return <SlideEnd onGoPage={goPage} />;
-        })()}
+        {/* key={slide} força re-mount → animação dispara sempre */}
+        <div key={slide} style={{ height: "100%", animation: slideAnim }}>
+          {(() => {
+            const s = STORY_SLIDES[slide];
+            if (s.type === "music") return <SlideMusicIntro />;
+            if (s.type === "photo") return <SlidePhoto config={s} />;
+            if (s.type === "end")   return <SlideEnd onGoPage={goPage} />;
+          })()}
+        </div>
       </div>
     </div>
   );
