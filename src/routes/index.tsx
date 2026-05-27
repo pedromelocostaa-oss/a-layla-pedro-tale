@@ -67,12 +67,13 @@ const STORY_SLIDES = [
   },
   {
     type: "photo" as const,
-    src: "/fotos/cumuru2.jpg",
+    src: "/fotos/cumuru2.png",
     fallbackSrc: null,
     label: "Cumuruxatiba",
     sublabel: "voltamos. como sempre.",
     accent: GOLD,
     grad: "linear-gradient(160deg,#1f1500,#1a1000)",
+    fitMode: "contain" as const,
   },
   {
     type: "end" as const,
