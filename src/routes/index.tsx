@@ -700,23 +700,6 @@ function SlideMusicIntro() {
         <button style={{ background: "none", border: "none", cursor: "default", padding: 8 }}><IcoRepeat /></button>
       </div>
 
-      {/* ── Rodapé — Spotify Connect ── */}
-      <div style={{
-        padding: "10px 22px 20px", flexShrink: 0,
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <IcoConnect />
-          <span style={{ color: "#b3b3b3", fontSize: 12, fontWeight: 700, letterSpacing: "1.5px", fontFamily: MO }}>
-            PEDROCOSTA
-          </span>
-        </div>
-        <div style={{ display: "flex", gap: 18, alignItems: "center" }}>
-          <button style={{ background: "none", border: "none", cursor: "default", padding: 0 }}><IcoShare /></button>
-          <button style={{ background: "none", border: "none", cursor: "default", padding: 0 }}><IcoQueue /></button>
-        </div>
-      </div>
-
     </div>
   );
 }
