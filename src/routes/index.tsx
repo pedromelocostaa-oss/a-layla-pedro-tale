@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import coupleFestival from "../assets/couple-festival.jpg";
 import coupleDinner from "../assets/couple-dinner.jpg";
+import LEGENDAS from "../legendas";
 
 export const Route = createFileRoute("/")({
   component: App,
@@ -101,15 +102,15 @@ const HEIC_NUMS = [
   135,136,137,
 ];
 
-const FOTO_PHOTOS: Photo[] = Array.from({ length: 74 }, (_, i) => ({
-  src: `/fotos/foto-${p3(i + 1)}.jpg`,
-  legenda: "Memória",
-}));
+const FOTO_PHOTOS: Photo[] = Array.from({ length: 74 }, (_, i) => {
+  const file = `foto-${p3(i + 1)}.jpg`;
+  return { src: `/fotos/${file}`, legenda: LEGENDAS[file] ?? "" };
+});
 
-const HEIC_PHOTOS: Photo[] = HEIC_NUMS.map(n => ({
-  src: `/fotos/heic-${p3(n)}.jpg`,
-  legenda: "Memória",
-}));
+const HEIC_PHOTOS: Photo[] = HEIC_NUMS.map(n => {
+  const file = `heic-${p3(n)}.jpg`;
+  return { src: `/fotos/${file}`, legenda: LEGENDAS[file] ?? "" };
+});
 
 // Vídeos — extensões que não são mp4
 const VIDEO_EXTS: Record<number, string> = {
@@ -121,7 +122,8 @@ const VIDEO_EXTS: Record<number, string> = {
 const VIDEO_MEDIA: Photo[] = Array.from({ length: 125 }, (_, i) => {
   const n = i + 1;
   const ext = VIDEO_EXTS[n] ?? "mp4";
-  return { src: `/fotos/video-${p3(n)}.${ext}`, legenda: "Vídeo", mediaType: "video" as const };
+  const file = `video-${p3(n)}.${ext}`;
+  return { src: `/fotos/${file}`, legenda: LEGENDAS[file] ?? "", mediaType: "video" as const };
 });
 
 const PHOTO_CATEGORIES: { label: string; photos: Photo[] }[] = [
@@ -1099,8 +1101,13 @@ function PageGallery() {
             <PhotoImg photo={current} fill contain />
           </div>
 
-          {/* Botão próxima */}
-          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "32px 24px 52px", background: "linear-gradient(transparent,rgba(0,0,0,.85))", display: "flex", justifyContent: "center" }}>
+          {/* Legenda + botão próxima */}
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "32px 24px 52px", background: "linear-gradient(transparent,rgba(0,0,0,.88))", display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+            {current.legenda && (
+              <p style={{ color: "rgba(255,255,255,.85)", fontSize: 15, fontFamily: PF, fontStyle: "italic", textAlign: "center", lineHeight: 1.5, margin: 0 }}>
+                {current.legenda}
+              </p>
+            )}
             <button
               onClick={next}
               style={{
@@ -1199,7 +1206,10 @@ function PageGallery() {
 
           <div style={{ padding: "14px 20px 36px", background: "linear-gradient(transparent,rgba(0,0,0,.8))", position: "absolute", bottom: 0, left: 0, right: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <button onClick={goPrev} style={{ background: "rgba(255,255,255,.12)", border: "none", borderRadius: "50%", width: 40, height: 40, color: "#fff", fontSize: 22, cursor: "pointer", opacity: lightbox === 0 ? .3 : 1 }}>‹</button>
-            <p style={{ color: "rgba(255,255,255,.8)", fontSize: 15, fontFamily: PF, fontStyle: "italic" }}>{lbPhoto.legenda}</p>
+            {lbPhoto.legenda
+              ? <p style={{ color: "rgba(255,255,255,.8)", fontSize: 15, fontFamily: PF, fontStyle: "italic", textAlign: "center", flex: 1, padding: "0 8px" }}>{lbPhoto.legenda}</p>
+              : <div style={{ flex: 1 }} />
+            }
             <button onClick={goNext} style={{ background: "rgba(255,255,255,.12)", border: "none", borderRadius: "50%", width: 40, height: 40, color: "#fff", fontSize: 22, cursor: "pointer", opacity: lightbox === ALL_PHOTOS.length - 1 ? .3 : 1 }}>›</button>
           </div>
         </div>
