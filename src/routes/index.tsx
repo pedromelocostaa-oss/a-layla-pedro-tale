@@ -78,18 +78,42 @@ const STORY_SLIDES = [
 
 // ── Photo gallery data ────────────────────────────────────────────────────────
 
-const ALL_PHOTOS: Photo[] = [
-  { src: coupleFestival,        legenda: "Show do Alok"          },
-  { src: coupleDinner,          legenda: "Jantar especial"        },
-  { src: "/fotos/foto1.jpg",    legenda: "Austrália"              },
-  { src: "/fotos/foto2.jpg",    legenda: "Miami"                  },
-  { src: "/fotos/foto3.jpg",    legenda: "Califórnia"             },
-  { src: "/fotos/foto4.jpg",    legenda: "Cumuruxatiba"           },
-  { src: "/fotos/foto5.jpg",    legenda: "Sertão Nordestino"      },
-  { src: "/fotos/foto6.jpg",    legenda: "Kite Trip"              },
-  { src: "/fotos/foto7.jpg",    legenda: "Dubai"                  },
-  { src: "/fotos/foto8.jpg",    legenda: "Petrópolis com a Mel"   },
+const p2 = (n: number) => String(n).padStart(2, "0");
+
+const PHOTO_CATEGORIES: { label: string; photos: Photo[] }[] = [
+  {
+    label: "Casal",
+    photos: Array.from({ length: 24 }, (_, i) => ({
+      src: `/fotos/casal-${p2(i + 1)}.jpg`,
+      legenda: "Casal",
+    })),
+  },
+  {
+    label: "Família & Amigos",
+    photos: Array.from({ length: 7 }, (_, i) => ({
+      src: `/fotos/familia-${p2(i + 1)}.jpg`,
+      legenda: "Família & Amigos",
+    })),
+  },
+  {
+    label: "Praia",
+    photos: [{ src: "/fotos/praia-01.jpg", legenda: "Praia" }],
+  },
+  {
+    label: "A Mel",
+    photos: [{ src: "/fotos/mel-01.jpg", legenda: "A Mel" }],
+  },
+  {
+    label: "Mais memórias",
+    photos: Array.from({ length: 26 }, (_, i) => ({
+      src: `/fotos/fb-${p2(i + 1)}.jpg`,
+      legenda: "Memória",
+    })),
+  },
 ];
+
+// lista plana usada pelo shuffle e lightbox
+const ALL_PHOTOS: Photo[] = PHOTO_CATEGORIES.flatMap(c => c.photos);
 
 // ── Achievements ──────────────────────────────────────────────────────────────
 
@@ -767,102 +791,135 @@ function AchCard({ a, locked }: { a: Achievement; locked?: boolean }) {
 
 // ── Gallery ───────────────────────────────────────────────────────────────────
 
-// Padrão de linhas estilo Google Photos / iPhone:
-// Cada linha define os índices das fotos e o "flex" de cada uma (largura relativa)
-const GALLERY_ROWS: { flex: number }[][] = [
-  [{ flex: 2 }, { flex: 1 }],          // linha 1: grande + pequena
-  [{ flex: 1 }, { flex: 1 }, { flex: 1 }],  // linha 2: três iguais
-  [{ flex: 1 }, { flex: 2 }],          // linha 3: pequena + grande
-  [{ flex: 1 }, { flex: 1 }, { flex: 1 }],  // linha 4: três iguais
-];
-const ROW_H = 130; // altura fixa de cada linha (px)
-const GAP   = 2;   // gap entre fotos (px)
+const GAP    = 2;
+const ROW_H  = 130;
+// padrão de larguras relativas que se repete (Google Photos / iPhone style)
+const ROW_PATTERN = [[2, 1], [1, 1, 1], [1, 2], [1, 1, 1]];
+
+function buildRows(photos: Photo[]) {
+  const rows: { flex: number; photo: Photo }[][] = [];
+  let i = 0, pi = 0;
+  while (i < photos.length) {
+    const pattern = ROW_PATTERN[pi % ROW_PATTERN.length];
+    const row: { flex: number; photo: Photo }[] = [];
+    for (const flex of pattern) {
+      if (i >= photos.length) break;
+      row.push({ flex, photo: photos[i++] });
+    }
+    if (row.length) rows.push(row);
+    pi++;
+  }
+  return rows;
+}
 
 function PageGallery() {
   const { current, next } = useShuffledPhotos();
-  const [lightbox, setLightbox] = useState<number | null>(null);
+  const [lightbox, setLightbox]   = useState<number | null>(null);
+  const [lbPhoto,  setLbPhoto]    = useState<Photo | null>(null);
   const txStart = useRef(0);
 
-  // distribui as fotos pelas linhas
-  let photoIdx = 0;
-  const rows = GALLERY_ROWS.map(row => {
-    const cells = row.map(cell => {
-      const photo = ALL_PHOTOS[photoIdx % ALL_PHOTOS.length];
-      photoIdx++;
-      return { ...cell, photo };
+  function openLb(photo: Photo) {
+    setLbPhoto(photo);
+    setLightbox(ALL_PHOTOS.indexOf(photo));
+  }
+  function closeLb() { setLightbox(null); setLbPhoto(null); }
+  function goPrev() {
+    setLightbox(i => {
+      if (i === null) return null;
+      const next = (i - 1 + ALL_PHOTOS.length) % ALL_PHOTOS.length;
+      setLbPhoto(ALL_PHOTOS[next]);
+      return next;
     });
-    return cells;
-  });
-
-  function openLightbox(idx: number) { setLightbox(idx); }
-  function closeLightbox() { setLightbox(null); }
-  function prevPhoto() { setLightbox(i => i !== null ? (i - 1 + ALL_PHOTOS.length) % ALL_PHOTOS.length : null); }
-  function nextPhoto() { setLightbox(i => i !== null ? (i + 1) % ALL_PHOTOS.length : null); }
-
+  }
+  function goNext() {
+    setLightbox(i => {
+      if (i === null) return null;
+      const next = (i + 1) % ALL_PHOTOS.length;
+      setLbPhoto(ALL_PHOTOS[next]);
+      return next;
+    });
+  }
   function onTouchStart(e: React.TouchEvent) { txStart.current = e.touches[0].clientX; }
   function onTouchEnd(e: React.TouchEvent) {
     const dx = e.changedTouches[0].clientX - txStart.current;
     if (Math.abs(dx) < 40) return;
-    if (dx < 0) nextPhoto(); else prevPhoto();
+    if (dx < 0) goNext(); else goPrev();
   }
 
   return (
     <section style={{ borderBottom: "1px solid rgba(255,255,255,.06)" }}>
+
       {/* Header */}
-      <div style={{ padding: "40px 20px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div style={{ padding: "40px 20px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <SecTitle>nossas memórias</SecTitle>
-        <button
-          onClick={next}
-          style={{ background: "rgba(255,255,255,.07)", border: "none", borderRadius: 50, padding: "8px 14px", color: "rgba(255,255,255,.6)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: MO, whiteSpace: "nowrap" }}
-        >
+        <button onClick={next} style={{ background: "rgba(255,255,255,.07)", border: "none", borderRadius: 50, padding: "8px 14px", color: "rgba(255,255,255,.55)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: MO, whiteSpace: "nowrap" }}>
           ↺ aleatória
         </button>
       </div>
 
-      {/* Mosaic grid */}
-      <div style={{ display: "flex", flexDirection: "column", gap: GAP, padding: `0 0 ${GAP}px` }}>
-        {rows.map((row, rowIdx) => (
-          <div key={rowIdx} style={{ display: "flex", gap: GAP, height: ROW_H }}>
-            {row.map((cell, cellIdx) => {
-              const globalIdx = ALL_PHOTOS.indexOf(cell.photo);
-              return (
-                <div
-                  key={cellIdx}
-                  onClick={() => openLightbox(globalIdx >= 0 ? globalIdx : 0)}
-                  style={{ flex: cell.flex, position: "relative", overflow: "hidden", cursor: "pointer", background: "#111" }}
-                >
-                  <PhotoImg photo={cell.photo} fill />
-                </div>
-              );
-            })}
-          </div>
-        ))}
+      {/* Destaque aleatório */}
+      <div onClick={() => openLb(current)} style={{ margin: "0 0 2px", position: "relative", height: 200, overflow: "hidden", cursor: "pointer", background: "#111" }}>
+        <PhotoImg photo={current} fill />
+        <div style={{ position: "absolute", inset: "auto 0 0 0", padding: "48px 16px 14px", background: "linear-gradient(transparent,rgba(0,0,0,.75))" }}>
+          <p style={{ color: "#fff", fontSize: 18, fontFamily: PF, fontStyle: "italic" }}>{current.legenda}</p>
+        </div>
       </div>
 
+      {/* Grade por categoria */}
+      {PHOTO_CATEGORIES.map(cat => (
+        <div key={cat.label}>
+          {/* Label categoria */}
+          <div style={{ padding: "14px 14px 6px", display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ color: "rgba(255,255,255,.55)", fontSize: 12, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", fontFamily: MO }}>
+              {cat.label}
+            </span>
+            <span style={{ color: "rgba(255,255,255,.2)", fontSize: 11, fontFamily: MO }}>
+              {cat.photos.length}
+            </span>
+          </div>
+
+          {/* Mosaico da categoria */}
+          <div style={{ display: "flex", flexDirection: "column", gap: GAP }}>
+            {buildRows(cat.photos).map((row, ri) => (
+              <div key={ri} style={{ display: "flex", gap: GAP, height: ROW_H }}>
+                {row.map((cell, ci) => (
+                  <div
+                    key={ci}
+                    onClick={() => openLb(cell.photo)}
+                    style={{ flex: cell.flex, position: "relative", overflow: "hidden", cursor: "pointer", background: "#111" }}
+                  >
+                    <PhotoImg photo={cell.photo} fill />
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      <div style={{ height: GAP }} />
+
       {/* Lightbox */}
-      {lightbox !== null && (
+      {lightbox !== null && lbPhoto && (
         <div
           style={{ position: "fixed", inset: 0, background: "#000", zIndex: 200, display: "flex", flexDirection: "column", maxWidth: 430, margin: "0 auto" }}
           onTouchStart={onTouchStart}
           onTouchEnd={onTouchEnd}
         >
-          {/* Top bar */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", flexShrink: 0, background: "rgba(0,0,0,.6)", backdropFilter: "blur(8px)" }}>
-            <button onClick={closeLightbox} style={{ background: "rgba(255,255,255,.1)", border: "none", borderRadius: "50%", width: 36, height: 36, color: "#fff", fontSize: 18, cursor: "pointer" }}>✕</button>
-            <span style={{ color: "rgba(255,255,255,.55)", fontSize: 13, fontFamily: MO }}>{lightbox + 1} / {ALL_PHOTOS.length}</span>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", flexShrink: 0, position: "absolute", top: 0, left: 0, right: 0, zIndex: 10, background: "linear-gradient(rgba(0,0,0,.7),transparent)" }}>
+            <button onClick={closeLb} style={{ background: "rgba(255,255,255,.15)", border: "none", borderRadius: "50%", width: 36, height: 36, color: "#fff", fontSize: 18, cursor: "pointer" }}>✕</button>
+            <span style={{ color: "rgba(255,255,255,.6)", fontSize: 12, fontFamily: MO }}>{lightbox + 1} / {ALL_PHOTOS.length}</span>
             <div style={{ width: 36 }} />
           </div>
 
-          {/* Photo */}
-          <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
-            <PhotoImg photo={ALL_PHOTOS[lightbox]} fill />
+          <div style={{ flex: 1, position: "relative" }}>
+            <PhotoImg photo={lbPhoto} fill />
           </div>
 
-          {/* Bottom bar */}
-          <div style={{ padding: "16px 20px 32px", background: "rgba(0,0,0,.6)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
-            <button onClick={prevPhoto} disabled={lightbox === 0} style={{ background: "rgba(255,255,255,.1)", border: "none", borderRadius: "50%", width: 40, height: 40, color: "#fff", fontSize: 20, cursor: "pointer", opacity: lightbox === 0 ? .3 : 1 }}>‹</button>
-            <p style={{ color: "#fff", fontSize: 16, fontFamily: PF, fontStyle: "italic", textAlign: "center" }}>{ALL_PHOTOS[lightbox].legenda}</p>
-            <button onClick={nextPhoto} disabled={lightbox === ALL_PHOTOS.length - 1} style={{ background: "rgba(255,255,255,.1)", border: "none", borderRadius: "50%", width: 40, height: 40, color: "#fff", fontSize: 20, cursor: "pointer", opacity: lightbox === ALL_PHOTOS.length - 1 ? .3 : 1 }}>›</button>
+          <div style={{ padding: "14px 20px 36px", background: "linear-gradient(transparent,rgba(0,0,0,.8))", position: "absolute", bottom: 0, left: 0, right: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <button onClick={goPrev} style={{ background: "rgba(255,255,255,.12)", border: "none", borderRadius: "50%", width: 40, height: 40, color: "#fff", fontSize: 22, cursor: "pointer", opacity: lightbox === 0 ? .3 : 1 }}>‹</button>
+            <p style={{ color: "rgba(255,255,255,.8)", fontSize: 15, fontFamily: PF, fontStyle: "italic" }}>{lbPhoto.legenda}</p>
+            <button onClick={goNext} style={{ background: "rgba(255,255,255,.12)", border: "none", borderRadius: "50%", width: 40, height: 40, color: "#fff", fontSize: 22, cursor: "pointer", opacity: lightbox === ALL_PHOTOS.length - 1 ? .3 : 1 }}>›</button>
           </div>
         </div>
       )}
