@@ -655,9 +655,9 @@ function SlideMusicIntro() {
           boxShadow: "0 28px 72px rgba(0,0,0,.7)",
         }}>
           <img
-            src="/fotos/foto-001.jpg"
+            src="/fotos/music-cover.png"
             alt="nós"
-            onError={e => { (e.target as HTMLImageElement).src = "/fotos/foto-002.jpg"; }}
+            onError={e => { (e.target as HTMLImageElement).src = "/fotos/foto-001.jpg"; }}
             style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
           />
         </div>
