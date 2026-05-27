@@ -11,9 +11,8 @@ export const Route = createFileRoute("/")({
 
 const PIN_CORRECT = "1411";
 const START_DATE   = new Date("2014-11-14T00:00:00");
-// Um Amor Puro – Djavan (Ao Vivo)
-const SPOTIFY_TRACK_ID = "3PlKQNlbL4767rND3HnqSI";
-const SPOTIFY_EMBED    = `https://open.spotify.com/embed/track/${SPOTIFY_TRACK_ID}?autoplay=1&utm_source=generator&theme=0`;
+// Um Amor Puro – Djavan | preview CDN (30 s, loop, sem login)
+const MUSIC_SRC = "https://p.scdn.co/mp3-preview/0f79ae825508d6be951528ec48a7f286d3bcc943.mp3";
 
 const PINK   = "#D4537E";
 const GREEN  = "#5DCAA5";
@@ -256,10 +255,28 @@ const GCSS = `
 // ── App root ──────────────────────────────────────────────────────────────────
 
 function App() {
-  const [screen,  setScreen]  = useState<Screen>("lock");
-  const [slide,   setSlide]   = useState(0);
-  const [alpha,   setAlpha]   = useState(1);
-  const [musicOn, setMusicOn] = useState(false);
+  const [screen, setScreen] = useState<Screen>("lock");
+  const [slide,  setSlide]  = useState(0);
+  const [alpha,  setAlpha]  = useState(1);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Chamado DENTRO do handler de clique → browser permite autoplay
+  function startMusic() {
+    if (!audioRef.current) {
+      const a    = new Audio(MUSIC_SRC);
+      a.loop     = true;
+      a.volume   = 0.75;
+      audioRef.current = a;
+    }
+    audioRef.current.play().catch(() => {});
+  }
+
+  function stopMusic() {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+  }
 
   function fadeTo(fn: () => void, ms = 420) {
     setAlpha(0);
@@ -276,36 +293,12 @@ function App() {
   return (
     <>
       <style>{GCSS}</style>
-
-      {/* Spotify player oculto — persiste em todas as telas */}
-      {musicOn && (
-        <iframe
-          key="spotify-bg"
-          title="background music"
-          src={SPOTIFY_EMBED}
-          style={{ position: "fixed", left: -9999, top: -9999, width: 1, height: 1, opacity: 0, pointerEvents: "none", border: "none" }}
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-        />
-      )}
-
       <div style={{ maxWidth: 430, margin: "0 auto", minHeight: "100dvh", background: "#0d0d0d", position: "relative", fontFamily: MO }}>
         <div style={{ opacity: alpha, transition: `opacity ${screen === "stories" ? ".42s" : ".6s"} ease` }}>
-          {screen === "lock"    && <LockScreen    onUnlock={() => fadeTo(() => setScreen("unlock"))} />}
-          {screen === "unlock"  && <UnlockMessage onStart={()  => fadeTo(() => setScreen("stories"))} />}
-          {screen === "stories" && (
-            <StoriesShell
-              slide={slide}
-              goSlide={goSlide}
-              goPage={goPage}
-              onMusicStart={() => setMusicOn(true)}
-            />
-          )}
-          {screen === "page" && (
-            <FullPage
-              onBackToStories={() => fadeTo(() => { setScreen("stories"); setSlide(0); })}
-              onStopMusic={() => setMusicOn(false)}
-            />
-          )}
+          {screen === "lock"   && <LockScreen    onUnlock={() => fadeTo(() => setScreen("unlock"))} />}
+          {screen === "unlock" && <UnlockMessage onStart={() => fadeTo(() => setScreen("stories"))} onMusicStart={startMusic} />}
+          {screen === "stories" && <StoriesShell slide={slide} goSlide={goSlide} goPage={goPage} />}
+          {screen === "page"   && <FullPage onBackToStories={() => fadeTo(() => { setScreen("stories"); setSlide(0); })} onStopMusic={stopMusic} />}
         </div>
       </div>
     </>
@@ -420,7 +413,7 @@ function LockScreen({ onUnlock }: { onUnlock: () => void }) {
 
 // ── Unlock message ────────────────────────────────────────────────────────────
 
-function UnlockMessage({ onStart }: { onStart: () => void }) {
+function UnlockMessage({ onStart, onMusicStart }: { onStart: () => void; onMusicStart: () => void }) {
   return (
     <div style={{ minHeight: "100dvh", background: "#0d0d0d", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "48px 32px", textAlign: "center" }}>
       <div style={{ animation: "pop-in .6s ease both" }}>
@@ -446,7 +439,6 @@ function UnlockMessage({ onStart }: { onStart: () => void }) {
         </p>
 
         <button
-          onClick={onStart}
           style={{
             background: PINK,
             border: "none",
@@ -461,6 +453,7 @@ function UnlockMessage({ onStart }: { onStart: () => void }) {
           }}
           onMouseDown={e => (e.currentTarget.style.transform = "scale(.96)")}
           onMouseUp={e   => (e.currentTarget.style.transform = "scale(1)")}
+          onClick={() => { onMusicStart(); onStart(); }}
         >
           Começar →
         </button>
@@ -471,33 +464,22 @@ function UnlockMessage({ onStart }: { onStart: () => void }) {
 
 // ── Stories shell ─────────────────────────────────────────────────────────────
 
-const STORY_BKGS = ["#050805", "#1a0a12", "#0a1f18", "#0d0d1a", "#1a1000", "#1a0a12"];
+const STORY_BKGS = ["#121212", "#1a0a12", "#0a1f18", "#0d0d1a", "#1a1000", "#1a0a12"];
 
 function StoriesShell({
-  slide, goSlide, goPage, onMusicStart,
+  slide, goSlide, goPage,
 }: {
   slide: number; goSlide: (n: number) => void; goPage: () => void;
-  onMusicStart: () => void;
 }) {
-  const tx            = useRef({ x: 0, y: 0 });
-  const musicStarted  = useRef(false);
+  const tx = useRef({ x: 0, y: 0 });
 
   function handleTap(e: React.MouseEvent) {
     if ((e.target as HTMLElement).closest("button,iframe,a")) return;
     const x = e.clientX;
     const w = (e.currentTarget as HTMLElement).clientWidth;
-    if (x < w * 0.3) {
-      goSlide(slide - 1);
-    } else if (slide < STORY_SLIDES.length - 1) {
-      // Primeira vez que avança do slide de música → inicia player
-      if (slide === 0 && !musicStarted.current) {
-        musicStarted.current = true;
-        onMusicStart();
-      }
-      goSlide(slide + 1);
-    } else {
-      goPage();
-    }
+    if (x < w * 0.3) goSlide(slide - 1);
+    else if (slide < STORY_SLIDES.length - 1) goSlide(slide + 1);
+    else goPage();
   }
 
   function onTouchStart(e: React.TouchEvent) {
@@ -549,108 +531,192 @@ function StoryProgress({ current, total }: { current: number; total: number }) {
   );
 }
 
-// ── Story slide: Music intro ──────────────────────────────────────────────────
+// ── Story slide: Music intro (layout Spotify player) ─────────────────────────
 
 function SlideMusicIntro() {
-  const EQ_BARS = [
-    { h: "45%", delay: "0s",    dur: "0.75s" },
-    { h: "80%", delay: "0.12s", dur: "0.65s" },
-    { h: "55%", delay: "0.06s", dur: "0.90s" },
-    { h: "95%", delay: "0.20s", dur: "0.70s" },
-    { h: "65%", delay: "0.03s", dur: "0.80s" },
-    { h: "85%", delay: "0.16s", dur: "0.68s" },
-    { h: "50%", delay: "0.09s", dur: "0.85s" },
-  ];
+  // Simula o progresso real da música na tela
+  const [secs, setSecs] = useState(29); // começa em 0:29 como no screenshot
+  const TOTAL = 327; // 5:27 total
+
+  useEffect(() => {
+    const id = setInterval(() => setSecs(s => (s >= TOTAL ? 0 : s + 1)), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const pct      = (secs / TOTAL) * 100;
+  const rem      = TOTAL - secs;
+  const fmt      = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+
+  // ── SVG icons Spotify-style ──────────────────────────────────────────────────
+  const IcoShuffle = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(255,255,255,.45)">
+      <path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/>
+    </svg>
+  );
+  const IcoPrev = () => (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+      <path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/>
+    </svg>
+  );
+  const IcoPause = () => (
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="black">
+      <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+    </svg>
+  );
+  const IcoNext = () => (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+      <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+    </svg>
+  );
+  const IcoRepeat = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(255,255,255,.45)">
+      <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/>
+    </svg>
+  );
+  const IcoConnect = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="#1DB954">
+      <path d="M21 3H3c-1.1 0-2 .9-2 2v3h2V5h18v14h-7v2h7c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM1 18v3h3c0-1.66-1.34-3-3-3zm0-4v2c2.76 0 5 2.24 5 5h2c0-3.87-3.13-7-7-7zm0-4v2c4.97 0 9 4.03 9 9h2c0-6.08-4.93-11-11-11z"/>
+    </svg>
+  );
+  const IcoShare = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(255,255,255,.55)">
+      <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/>
+    </svg>
+  );
+  const IcoQueue = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(255,255,255,.55)">
+      <path d="M15 6H3v2h12V6zm0 4H3v2h12v-2zM3 16h8v-2H3v2zM17 6v8.18c-.31-.11-.65-.18-1-.18-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V8h3V6h-5z"/>
+    </svg>
+  );
 
   return (
-    <div style={{ height: "100%", position: "relative", overflow: "hidden", background: "#050805" }}>
+    <div style={{
+      height: "100%",
+      background: "linear-gradient(180deg, #1e3321 0%, #121212 38%)",
+      display: "flex", flexDirection: "column",
+      overflow: "hidden",
+    }}>
 
-      {/* Foto do casal ao fundo — bem escurecida */}
-      <img
-        src="/fotos/casal-01.jpg"
-        alt="nós"
-        onError={e => { (e.target as HTMLElement).style.display = "none"; }}
-        style={{
-          position: "absolute", inset: 0, width: "100%", height: "100%",
-          objectFit: "cover", opacity: 0.22,
-          filter: "brightness(0.5) saturate(0.2) contrast(1.15)",
-        }}
-      />
-
-      {/* Raios de holofote vindos de cima */}
-      <div aria-hidden style={{
-        position: "absolute", inset: 0,
-        background: [
-          "radial-gradient(ellipse 45% 30% at 50% 0%, rgba(180,230,180,.07) 0%, transparent 100%)",
-          "radial-gradient(ellipse 20% 50% at 30% 0%, rgba(200,255,200,.04) 0%, transparent 100%)",
-          "radial-gradient(ellipse 20% 50% at 70% 0%, rgba(200,255,200,.04) 0%, transparent 100%)",
-        ].join(","),
-        pointerEvents: "none",
-      }} />
-
-      {/* Gradiente dark de cima pra baixo */}
-      <div aria-hidden style={{
-        position: "absolute", inset: 0,
-        background: "linear-gradient(180deg, rgba(0,0,0,.5) 0%, rgba(0,0,0,.1) 35%, rgba(0,0,0,.65) 65%, rgba(0,0,0,.97) 100%)",
-        pointerEvents: "none",
-      }} />
-
-      {/* Conteúdo principal — alinhado ao rodapé */}
+      {/* ── Top bar ── */}
       <div style={{
-        position: "absolute", inset: 0,
-        display: "flex", flexDirection: "column",
-        alignItems: "center", justifyContent: "flex-end",
-        padding: "0 32px 60px",
-        textAlign: "center",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "14px 22px 8px", flexShrink: 0,
       }}>
-
-        {/* Equalizador animado */}
-        <div style={{ display: "flex", gap: 4, alignItems: "flex-end", height: 28, marginBottom: 30 }}>
-          {EQ_BARS.map((b, i) => (
-            <div key={i} style={{
-              width: 3, height: b.h, borderRadius: 2,
-              background: "#1DB954",
-              transformOrigin: "bottom",
-              animation: `eq-bar ${b.dur} ${b.delay} ease-in-out infinite alternate`,
-            }} />
-          ))}
+        <button style={{ background: "none", border: "none", cursor: "default", padding: "4px 0", lineHeight: 1 }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="rgba(255,255,255,.7)">
+            <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+          </svg>
+        </button>
+        <div style={{ textAlign: "center" }}>
+          <p style={{ color: "rgba(255,255,255,.5)", fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", fontFamily: MO, textTransform: "uppercase" }}>
+            Djavan &quot;Ao Vivo&quot;
+          </p>
         </div>
-
-        {/* Título da música */}
-        <p style={{
-          fontFamily: PF, fontSize: 36, fontWeight: 900, fontStyle: "italic",
-          color: "#fff", lineHeight: 1.15, marginBottom: 10,
-          textShadow: "0 4px 28px rgba(0,0,0,.9)",
-          animation: "fade-up .7s ease both",
-        }}>
-          Um Amor Puro
-        </p>
-
-        {/* Artista */}
-        <p style={{
-          fontFamily: MO, fontSize: 12, fontWeight: 700,
-          color: "rgba(255,255,255,.45)",
-          letterSpacing: "5px", textTransform: "uppercase",
-          marginBottom: 28,
-          animation: "fade-up .7s .1s ease both",
-        }}>
-          Djavan
-        </p>
-
-        {/* Barra de progresso decorativa */}
-        <div style={{ width: "100%", height: 2, background: "rgba(255,255,255,.1)", borderRadius: 1, marginBottom: 24 }}>
-          <div style={{ height: "100%", width: "18%", background: "linear-gradient(90deg,#1DB954,#1ed760)", borderRadius: 1 }} />
-        </div>
-
-        {/* Dica */}
-        <p style={{
-          color: "rgba(255,255,255,.2)", fontSize: 11,
-          letterSpacing: "2px", textTransform: "uppercase",
-          animation: "pulse-op 2.5s ease infinite",
-        }}>
-          toque para avançar ♫
-        </p>
+        <button style={{ background: "none", border: "none", cursor: "default", padding: "4px 0" }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(255,255,255,.7)">
+            <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+          </svg>
+        </button>
       </div>
+
+      {/* ── Album art — foto do casal ── */}
+      <div style={{ padding: "10px 22px 18px", flexShrink: 0 }}>
+        <div style={{
+          width: "100%", aspectRatio: "1 / 1",
+          borderRadius: 6, overflow: "hidden",
+          boxShadow: "0 28px 72px rgba(0,0,0,.7)",
+        }}>
+          <img
+            src="/fotos/casal-01.jpg"
+            alt="nós"
+            onError={e => { (e.target as HTMLImageElement).src = "/fotos/casal-02.jpg"; }}
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+          />
+        </div>
+      </div>
+
+      {/* ── Texto verde e info da faixa ── */}
+      <div style={{ padding: "0 22px 10px", flexShrink: 0 }}>
+        <p style={{ color: "#1DB954", fontSize: 13, fontWeight: 600, fontFamily: MO, marginBottom: 14, lineHeight: 1.3 }}>
+          O que há dentro do meu coração
+        </p>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <div style={{ minWidth: 0 }}>
+            <p style={{ color: "#fff", fontSize: 22, fontWeight: 700, fontFamily: MO, marginBottom: 3, lineHeight: 1.2 }}>
+              Um Amor Puro
+            </p>
+            <p style={{ color: "#b3b3b3", fontSize: 14, fontFamily: MO }}>Djavan</p>
+          </div>
+          <div style={{
+            width: 32, height: 32, borderRadius: "50%", background: "#1DB954", flexShrink: 0,
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="black">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Barra de progresso animada ── */}
+      <div style={{ padding: "0 22px 4px", flexShrink: 0 }}>
+        <div style={{ position: "relative", height: 4, background: "#535353", borderRadius: 2 }}>
+          <div style={{
+            position: "absolute", top: 0, left: 0,
+            height: "100%", width: `${pct}%`,
+            background: "#fff", borderRadius: 2,
+            transition: "width 1s linear",
+          }}>
+            <div style={{
+              position: "absolute", right: -6, top: "50%",
+              transform: "translateY(-50%)",
+              width: 12, height: 12, borderRadius: "50%", background: "#fff",
+            }} />
+          </div>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
+          <span style={{ color: "#b3b3b3", fontSize: 11, fontFamily: MO }}>{fmt(secs)}</span>
+          <span style={{ color: "#b3b3b3", fontSize: 11, fontFamily: MO }}>-{fmt(rem)}</span>
+        </div>
+      </div>
+
+      {/* ── Controles ── */}
+      <div style={{
+        padding: "6px 18px 4px", flexShrink: 0,
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+      }}>
+        <button style={{ background: "none", border: "none", cursor: "default", padding: 8 }}><IcoShuffle /></button>
+        <button style={{ background: "none", border: "none", cursor: "default", padding: 8 }}><IcoPrev /></button>
+        <button style={{
+          width: 64, height: 64, borderRadius: "50%",
+          background: "#fff", border: "none", cursor: "default",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          boxShadow: "0 4px 20px rgba(0,0,0,.4)",
+          flexShrink: 0,
+        }}>
+          <IcoPause />
+        </button>
+        <button style={{ background: "none", border: "none", cursor: "default", padding: 8 }}><IcoNext /></button>
+        <button style={{ background: "none", border: "none", cursor: "default", padding: 8 }}><IcoRepeat /></button>
+      </div>
+
+      {/* ── Rodapé — Spotify Connect ── */}
+      <div style={{
+        padding: "10px 22px 20px", flexShrink: 0,
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <IcoConnect />
+          <span style={{ color: "#b3b3b3", fontSize: 12, fontWeight: 700, letterSpacing: "1.5px", fontFamily: MO }}>
+            PEDROCOSTA
+          </span>
+        </div>
+        <div style={{ display: "flex", gap: 18, alignItems: "center" }}>
+          <button style={{ background: "none", border: "none", cursor: "default", padding: 0 }}><IcoShare /></button>
+          <button style={{ background: "none", border: "none", cursor: "default", padding: 0 }}><IcoQueue /></button>
+        </div>
+      </div>
+
     </div>
   );
 }
