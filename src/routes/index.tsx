@@ -24,7 +24,7 @@ const MO     = "'Montserrat', Arial, sans-serif";
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type Screen = "lock" | "unlock" | "stories" | "page";
-type Photo  = { src: string; legenda: string };
+type Photo  = { src: string; legenda: string; mediaType?: "video" };
 type Achievement = { emoji: string; name: string; color: string };
 
 // ── Story slides config ───────────────────────────────────────────────────────
@@ -111,10 +111,27 @@ const HEIC_PHOTOS: Photo[] = HEIC_NUMS.map(n => ({
   legenda: "Memória",
 }));
 
+// Vídeos — extensões que não são mp4
+const VIDEO_EXTS: Record<number, string> = {
+  1: "mov", 3: "mov", 15: "mov", 16: "mov", 43: "mov", 49: "mov",
+  51: "mov", 54: "mov", 67: "mov", 90: "mov", 91: "mov", 98: "mov",
+  100: "mov", 103: "mov", 116: "mov",
+};
+
+const VIDEO_MEDIA: Photo[] = Array.from({ length: 125 }, (_, i) => {
+  const n = i + 1;
+  const ext = VIDEO_EXTS[n] ?? "mp4";
+  return { src: `/fotos/video-${p3(n)}.${ext}`, legenda: "Vídeo", mediaType: "video" as const };
+});
+
 const PHOTO_CATEGORIES: { label: string; photos: Photo[] }[] = [
   {
-    label: "Todas as memórias",
+    label: "Fotos",
     photos: [...FOTO_PHOTOS, ...HEIC_PHOTOS],
+  },
+  {
+    label: "Vídeos",
+    photos: VIDEO_MEDIA,
   },
 ];
 
@@ -1091,8 +1108,19 @@ function PageGallery() {
             <div style={{ width: 36 }} />
           </div>
 
-          <div style={{ flex: 1, position: "relative" }}>
-            <PhotoImg photo={lbPhoto} fill contain />
+          <div style={{ flex: 1, position: "relative", background: "#000" }}>
+            {lbPhoto.mediaType === "video" ? (
+              <video
+                key={lbPhoto.src}
+                src={lbPhoto.src}
+                controls
+                autoPlay
+                playsInline
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain" }}
+              />
+            ) : (
+              <PhotoImg photo={lbPhoto} fill contain />
+            )}
           </div>
 
           <div style={{ padding: "14px 20px 36px", background: "linear-gradient(transparent,rgba(0,0,0,.8))", position: "absolute", bottom: 0, left: 0, right: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -1108,17 +1136,37 @@ function PageGallery() {
 
 function PhotoImg({ photo, fill, contain }: { photo: Photo; fill?: boolean; contain?: boolean }) {
   const [err, setErr] = useState(false);
-  const s: React.CSSProperties = fill
-    ? { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: contain ? "contain" : "cover", display: "block" }
+  const isVideo = photo.mediaType === "video";
+
+  const wrapFill: React.CSSProperties = { position: "absolute", inset: 0, width: "100%", height: "100%" };
+  const imgStyle: React.CSSProperties = fill
+    ? { ...wrapFill, objectFit: contain ? "contain" : "cover", display: "block" }
     : { width: "100%", display: "block" };
-  return err ? (
-    <div style={{ ...s, background: "#1a1a2e", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6 }}>
-      <span style={{ fontSize: 28 }}>📷</span>
-      <span style={{ color: "rgba(255,255,255,.3)", fontSize: 10 }}>{photo.legenda}</span>
-    </div>
-  ) : (
-    <img src={photo.src} alt={photo.legenda} onError={() => setErr(true)} style={s} />
-  );
+
+  if (err) {
+    return (
+      <div style={{ ...imgStyle, background: "#1a1a2e", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6 }}>
+        <span style={{ fontSize: 28 }}>{isVideo ? "🎬" : "📷"}</span>
+        <span style={{ color: "rgba(255,255,255,.3)", fontSize: 10 }}>{photo.legenda}</span>
+      </div>
+    );
+  }
+
+  if (isVideo) {
+    // Mosaico: thumbnail escuro com ícone de play
+    const boxStyle: React.CSSProperties = fill
+      ? { ...wrapFill, background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center" }
+      : { width: "100%", aspectRatio: "16/9", background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center" };
+    return (
+      <div style={boxStyle}>
+        <div style={{ width: 44, height: 44, borderRadius: "50%", background: "rgba(255,255,255,.18)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+        </div>
+      </div>
+    );
+  }
+
+  return <img src={photo.src} alt={photo.legenda} onError={() => setErr(true)} style={imgStyle} />;
 }
 
 // ── Nossa História ────────────────────────────────────────────────────────────
