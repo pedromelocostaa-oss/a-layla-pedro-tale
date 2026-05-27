@@ -135,8 +135,11 @@ const PHOTO_CATEGORIES: { label: string; photos: Photo[] }[] = [
   },
 ];
 
-// lista plana usada pelo shuffle e lightbox
+// lista plana usada pelo lightbox
 const ALL_PHOTOS: Photo[] = PHOTO_CATEGORIES.flatMap(c => c.photos);
+
+// apenas fotos (sem vídeos) para o destaque aleatório
+const PHOTO_ITEMS_ONLY: Photo[] = ALL_PHOTOS.filter(p => p.mediaType !== "video");
 
 // ── Achievements ──────────────────────────────────────────────────────────────
 
@@ -249,12 +252,12 @@ function useCountdown() {
 }
 
 function useShuffledPhotos() {
-  const [queue, setQueue] = useState<Photo[]>(() => shuffle(ALL_PHOTOS));
+  const [queue, setQueue] = useState<Photo[]>(() => shuffle(PHOTO_ITEMS_ONLY));
   const [idx,   setIdx]   = useState(0);
-  const current = queue[idx] ?? ALL_PHOTOS[0];
+  const current = queue[idx] ?? PHOTO_ITEMS_ONLY[0];
   function next() {
     if (idx < queue.length - 1) setIdx(i => i + 1);
-    else { setQueue(shuffle(ALL_PHOTOS)); setIdx(0); }
+    else { setQueue(shuffle(PHOTO_ITEMS_ONLY)); setIdx(0); }
   }
   return { current, next };
 }
@@ -1008,11 +1011,22 @@ function buildRows(photos: Photo[]) {
   return rows;
 }
 
+const PAGE_SIZE = 24;
+
 function PageGallery() {
   const { current, next } = useShuffledPhotos();
   const [lightbox, setLightbox]   = useState<number | null>(null);
   const [lbPhoto,  setLbPhoto]    = useState<Photo | null>(null);
+  // quantos itens estão visíveis por categoria
+  const [visible, setVisible]     = useState<Record<string, number>>({});
   const txStart = useRef(0);
+
+  function visibleCount(label: string, total: number) {
+    return visible[label] ?? Math.min(PAGE_SIZE, total);
+  }
+  function loadMore(label: string, total: number) {
+    setVisible(v => ({ ...v, [label]: Math.min((v[label] ?? PAGE_SIZE) + PAGE_SIZE, total) }));
+  }
 
   function openLb(photo: Photo) {
     setLbPhoto(photo);
@@ -1062,36 +1076,53 @@ function PageGallery() {
       </div>
 
       {/* Grade por categoria */}
-      {PHOTO_CATEGORIES.map(cat => (
-        <div key={cat.label}>
-          {/* Label categoria */}
-          <div style={{ padding: "14px 14px 6px", display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ color: "rgba(255,255,255,.55)", fontSize: 12, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", fontFamily: MO }}>
-              {cat.label}
-            </span>
-            <span style={{ color: "rgba(255,255,255,.2)", fontSize: 11, fontFamily: MO }}>
-              {cat.photos.length}
-            </span>
-          </div>
+      {PHOTO_CATEGORIES.map(cat => {
+        const shown = visibleCount(cat.label, cat.photos.length);
+        const slice = cat.photos.slice(0, shown);
+        const hasMore = shown < cat.photos.length;
+        return (
+          <div key={cat.label}>
+            {/* Label categoria */}
+            <div style={{ padding: "14px 14px 6px", display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ color: "rgba(255,255,255,.55)", fontSize: 12, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", fontFamily: MO }}>
+                {cat.label}
+              </span>
+              <span style={{ color: "rgba(255,255,255,.2)", fontSize: 11, fontFamily: MO }}>
+                {shown}/{cat.photos.length}
+              </span>
+            </div>
 
-          {/* Mosaico da categoria */}
-          <div style={{ display: "flex", flexDirection: "column", gap: GAP }}>
-            {buildRows(cat.photos).map((row, ri) => (
-              <div key={ri} style={{ display: "flex", gap: GAP, height: ROW_H }}>
-                {row.map((cell, ci) => (
-                  <div
-                    key={ci}
-                    onClick={() => openLb(cell.photo)}
-                    style={{ flex: cell.flex, position: "relative", overflow: "hidden", cursor: "pointer", background: "#111" }}
-                  >
-                    <PhotoImg photo={cell.photo} fill />
-                  </div>
-                ))}
+            {/* Mosaico da categoria */}
+            <div style={{ display: "flex", flexDirection: "column", gap: GAP }}>
+              {buildRows(slice).map((row, ri) => (
+                <div key={ri} style={{ display: "flex", gap: GAP, height: ROW_H }}>
+                  {row.map((cell, ci) => (
+                    <div
+                      key={ci}
+                      onClick={() => openLb(cell.photo)}
+                      style={{ flex: cell.flex, position: "relative", overflow: "hidden", cursor: "pointer", background: "#111" }}
+                    >
+                      <PhotoImg photo={cell.photo} fill />
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+
+            {/* Botão Ver mais */}
+            {hasMore && (
+              <div style={{ padding: "12px 14px" }}>
+                <button
+                  onClick={() => loadMore(cat.label, cat.photos.length)}
+                  style={{ width: "100%", background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.1)", borderRadius: 10, padding: "12px", color: "rgba(255,255,255,.6)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: MO }}
+                >
+                  Ver mais ({cat.photos.length - shown} restantes)
+                </button>
               </div>
-            ))}
+            )}
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       <div style={{ height: GAP }} />
 
@@ -1166,7 +1197,7 @@ function PhotoImg({ photo, fill, contain }: { photo: Photo; fill?: boolean; cont
     );
   }
 
-  return <img src={photo.src} alt={photo.legenda} onError={() => setErr(true)} style={imgStyle} />;
+  return <img src={photo.src} alt={photo.legenda} loading="lazy" decoding="async" onError={() => setErr(true)} style={imgStyle} />;
 }
 
 // ── Nossa História ────────────────────────────────────────────────────────────
