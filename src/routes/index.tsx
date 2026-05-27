@@ -47,12 +47,13 @@ const STORY_SLIDES = [
   },
   {
     type: "photo" as const,
-    src: "/fotos/cumuru1.jpg",
+    src: "/fotos/cumuru1.png",
     fallbackSrc: null,
     label: "Cumuruxatiba",
     sublabel: "nossa 1ª viagem juntos",
     accent: GREEN,
     grad: "linear-gradient(160deg,#0a1f18,#0a1a14)",
+    fitMode: "contain" as const,
   },
   {
     type: "photo" as const,
