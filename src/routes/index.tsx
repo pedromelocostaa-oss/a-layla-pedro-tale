@@ -465,9 +465,6 @@ function UnlockMessage({ onStart, onMusicStart }: { onStart: () => void; onMusic
         <p style={{ color: "rgba(255,255,255,.55)", fontSize: 16, lineHeight: 1.75, marginBottom: 16, fontFamily: PF, fontStyle: "italic" }}>
           São 11 anos de memórias,<br />histórias e muito amor.
         </p>
-        <p style={{ color: "rgba(255,255,255,.35)", fontSize: 15, lineHeight: 1.75, marginBottom: 52 }}>
-          Prepare o coração. ❤️
-        </p>
 
         <button
           style={{
