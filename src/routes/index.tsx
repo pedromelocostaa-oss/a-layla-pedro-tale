@@ -910,7 +910,7 @@ function PageHero({ onBack }: { onBack: () => void }) {
         ← stories
       </button>
 
-      <h1 style={{ fontFamily: PF, fontSize: 40, fontWeight: 900, color: "#fff", margin: "0 0 6px", lineHeight: 1.15 }}>Layla & Pedro</h1>
+      <h1 style={{ fontFamily: MO, fontSize: 36, fontWeight: 800, color: "#fff", margin: "0 0 6px", lineHeight: 1.15, letterSpacing: "-0.5px" }}>Layla & Pedro</h1>
       <p style={{ color: "rgba(255,255,255,.28)", fontSize: 13, marginBottom: 26 }}>14 de novembro de 2014</p>
 
       <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", rowGap: 4 }}>
