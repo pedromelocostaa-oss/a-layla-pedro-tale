@@ -175,54 +175,85 @@ const LOCKED: Achievement[] = [
   { emoji: "🎓", name: "Nosso Negócio",        color: "#c4b5fd" },
 ];
 
-// ── Chapters ──────────────────────────────────────────────────────────────────
+// ── Carta ─────────────────────────────────────────────────────────────────────
 
-const CHAPTERS = [
-  {
-    title: "Você me viu primeiro",
-    content: `Tinha um dia comum, daqueles que você não espera nada.
+const CARTA = `Layla,
 
-Eu estava dando rolê no shopping, encontrei a Nanda do nada e parei pra conversar. Você estava na mesa com ela e outras amigas. Você me viu. Eu não te vi.
+Tinha um dia comum, daqueles que você não espera nada.
 
-Mas você não deixou aquilo passar. Me adicionou no Facebook e começou a puxar assunto com aquela leveza sua que é difícil de resistir. Fui respondendo, fui gostando, fui querendo conversar mais.
+Eu estava dando rolê no shopping, encontrei a Nanda do nada e parei pra conversar. Você estava na mesa com ela e outras amigas. Naquele momento, você me viu. Eu não te vi.
 
-E foi assim que tudo começou, por iniciativa sua, numa mesa de shopping em que eu nem te notei. Sorte a minha que você é mais atenta do que eu.`,
-  },
-  {
-    title: "A roupa de vôlei",
-    content: `Eu estava saindo pra uma festa quando decidi.
+Mas você não deixou aquilo passar.
 
-Subi pro apartamento do meu amigo, tomei banho, escovei o dente (sim, escovei o dente com intenção) e desci. Você tinha acabado de jogar vôlei e ainda estava com aquela roupa. Eu te peguei pela mão, levei até o lado do elevador, e a gente ficou pela primeira vez.
+Me adicionou no Facebook e começou a puxar assunto, batendo papo do nada, com aquela leveza sua que é difícil de resistir. Fui respondendo, fui gostando, fui querendo conversar mais. Você é tão gente boa que é impossível não gostar. E foi assim que tudo começou — por iniciativa sua, numa mesa de shopping em que eu nem te notei.
 
-Lembro exatamente do que senti. Achei você bonita, gostei demais. Mas não quis dar o braço a torcer. Só que no fundo eu já gostava muito de você, só não admitia nem pra mim mesmo.
+Sorte a minha que você é mais atenta do que eu.
 
-Essa época foi muito boa. Eu só pensava em você.`,
-  },
-  {
-    title: "As histórias que nunca esqueço",
-    content: `Onze anos dão muita história. Essas são algumas que eu nunca vou esquecer.
+A roupa de vôlei
 
-O seu pai no bar. Eu estava muito de boa quando ele chegou trocando ideia comigo. A conversa foi indo e então ele apertou meu saco. Literalmente. Fiquei sem reação. Saí e ele nunca pediu desculpas.
+Eu estava saindo pra uma festa quando decidi.
 
-A barraca. Nossa primeira vez foi especial por dois motivos: primeiro porque foi com você, segundo porque foi numa barraca de acampamento.
+Subi pro apartamento do meu amigo, tomei banho, escovei o dente — sim, escovei o dente com intenção — e desci. Você tinha acabado de jogar vôlei e ainda estava com aquela roupa.
 
-Dubai. Dormindo no mesmo quarto que sua tia e a gente foi pro banheiro. Até hoje não sei como não fomos descobertos.
+Eu te peguei pela mão, levei até o lado do elevador, e a gente ficou pela primeira vez.
 
-As viagens. Austrália. Miami. Califórnia. O sertão nordestino. Petrópolis pra buscar a Mel.
+Lembro exatamente do que senti. Achei você bonita, gostei demais de ter ficado com você. Mas não quis dar o braço a torcer. Queria ser aquele cara que não se apega, sabe como é. A questão é que, no fundo, eu já gostava muito de você — só não admitia nem pra mim mesmo.
 
-O show do Alok no BHDF. Só nós dois. Que noite boa foi aquela.`,
-  },
-  {
-    title: "Quem você é",
-    content: `Você é, antes de tudo, gente boa. De verdade, daquele jeito raro. Feliz com a vida, com as pessoas, com as pequenas coisas.
+A gente continuou se encontrando todo final de semana. Eu ia pra casa do Bubs, você ia pra casa da Nanda, e os dois moravam no mesmo prédio. Conversávamos pelo Snapchat, pelo Facebook. Nas férias, eu pegava ônibus pro Belvedere e a gente andava de skate. Ficávamos do lado de fora da Perse — você falava pros seus pais que estava lá e a gente ficava na rua, conversando, andando, se pegando.
 
-Além disso você é linda, sabe muito sobre muita coisa (aprendeu bem com sua mãe) e é cuidadosa de um jeito que não é comum. Você está sempre presente. Sempre.
+Essa época foi muito boa. Eu só pensava em você.
 
-Estivemos juntos em todas as fases: escola, faculdade, primeiro emprego, crescimento. A gente se conhece como ninguém.
+Umas histórias que eu nunca vou esquecer
 
-Você definitivamente é minha escolha. Todo dia.`,
-  },
-];
+Onze anos dão muita história. Essas são algumas que eu nunca vou esquecer.
+
+O seu pai no bar. Eu estava muito de boa, tranquilo, quando seu pai chegou do nada trocando ideia comigo. A conversa foi, foi — e então ele apertou meu saco. Literalmente. Fiquei completamente sem reação, não sabia o que falar, o que fazer, o que pensar. Conversamos mais um pouco e eu saí. O melhor? Ele nunca pediu desculpas. Até hoje acho que ele fez isso de propósito pra me testar.
+
+A barraca. Nossa primeira vez foi especial por dois motivos: primeiro porque foi com você, segundo porque foi numa barraca de acampamento. Eu saí da minha, fui pra sua, e o resto a gente sabe. Não existe uma história mais nossa do que essa.
+
+Dubai. Dormindo no mesmo quarto que sua tia — aquele clima de missão impossível — e a gente foi pro banheiro. Até hoje não sei como não fomos descobertos.
+
+A loja no Atlanta. Eu chegava de ônibus do trabalho, te encontrava na loja, ficava um pouco te ajudando, e a gente ia junto pra faculdade em Milton Campos. Aos sábados ficávamos contando os minutos pra dar meio-dia e a gente poder ir embora. Tenho que ser honesto: quando lembro dessa época, a primeira coisa que me vem é o quanto você era brava. Mas passava.
+
+As viagens. Austrália. Miami. Califórnia. O sertão nordestino — aquela viagem maluca que só a gente faria. Petrópolis pra buscar a Mel. Cada uma com a sua história, cada uma construindo mais um pedaço do que somos.
+
+O show do Alok no BHDF. Só nós dois. Que noite boa foi aquela.
+
+Onze anos
+
+Onze anos e eu ainda tenho muita coisa pra viver com você.
+
+Já passamos por muita coisa boa e por alguns momentos muito difíceis também. É assim que funciona — a vida não dá desconto pra ninguém. Mas a gente está aqui, crescendo, aprendendo a ser homem e mulher de verdade.
+
+Somos mais do que namorados. Somos parceiros.
+
+O que eu enxergo em você
+
+Tenho muito a te falar sobre o que enxergo em você.
+
+Você é, antes de tudo, gente boa. De verdade, daquele jeito raro. Feliz com a vida, com as pessoas, com as pequenas coisas. Pra mim isso vale mais do que qualquer outra coisa — é o que mais importa em uma pessoa.
+
+Além disso você é linda, sabe muito sobre muita coisa — aprendeu bem com sua mãe — e é cuidadosa de um jeito que não é comum. Você está sempre presente. Sempre.
+
+Estivemos juntos em todas as fases: escola, faculdade, primeiro emprego, crescimento. A gente se conhece como ninguém. Essa conexão que temos é uma coisa bizarra de boa — não tem como explicar pra quem está de fora.
+
+Você definitivamente é minha escolha. Todo dia.
+
+O que vem pela frente
+
+Ainda temos muito pra fazer, pra construir, pra melhorar. Mas já posso dizer que a nossa história está escrita com felicidade, amor e — principalmente — muito aprendizado.
+
+Vamos continuar, juntos, pra tudo que vier.
+
+Te amo muito. Muito mesmo.`;
+
+const CARTA_TITLES = new Set([
+  "A roupa de vôlei",
+  "Umas histórias que eu nunca vou esquecer",
+  "Onze anos",
+  "O que eu enxergo em você",
+  "O que vem pela frente",
+]);
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -1256,46 +1287,92 @@ function PhotoImg({ photo, fill, contain }: { photo: Photo; fill?: boolean; cont
 // ── Nossa História ────────────────────────────────────────────────────────────
 
 function PageHistoria({ onStopMusic }: { onStopMusic: () => void }) {
-  const [open, setOpen] = useState<number | null>(null);
+  const [expanded, setExpanded] = useState(false);
+  const [showHearts, setShowHearts] = useState(false);
+  const endRef = useRef<HTMLDivElement>(null);
   const musicStopped = useRef(false);
 
-  function handleChapterClick(i: number) {
-    // Para a música na primeira vez que ela abre um capítulo
+  useEffect(() => {
+    if (!expanded) return;
+    const el = endRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setShowHearts(true); },
+      { threshold: 0.6 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [expanded]);
+
+  function handleExpand() {
     if (!musicStopped.current) {
       musicStopped.current = true;
       onStopMusic();
     }
-    setOpen(open === i ? null : i);
+    setExpanded(true);
+  }
+
+  const paragraphs = CARTA.split("\n\n").filter(p => p.trim());
+
+  function renderParagraph(text: string, i: number) {
+    const t = text.trim();
+    if (t === "Layla,") {
+      return (
+        <p key={i} style={{ fontFamily: PF, fontSize: 22, fontWeight: 700, color: "#fff", marginBottom: 20 }}>
+          {t}
+        </p>
+      );
+    }
+    if (CARTA_TITLES.has(t)) {
+      return (
+        <p key={i} style={{ fontFamily: PF, fontSize: 17, fontWeight: 700, color: PINK, marginTop: 28, marginBottom: 12, letterSpacing: ".4px" }}>
+          {t}
+        </p>
+      );
+    }
+    return (
+      <p key={i} style={{ fontFamily: PF, fontStyle: "italic", color: "rgba(255,255,255,.72)", fontSize: 15, lineHeight: 1.85, marginBottom: 14 }}>
+        {t}
+      </p>
+    );
   }
 
   return (
     <section style={{ padding: "40px 20px", borderBottom: "1px solid rgba(255,255,255,.06)" }}>
+      {showHearts && <HeartRain />}
       <SecTitle>nossa história</SecTitle>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {CHAPTERS.map((ch, i) => (
-          <div key={i} style={{ background: "#141414", border: `1px solid ${open === i ? PINK + "40" : "rgba(255,255,255,.07)"}`, borderRadius: 16, overflow: "hidden", transition: "border-color .2s" }}>
-            <button onClick={() => handleChapterClick(i)} style={{ width: "100%", background: "transparent", border: "none", padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", gap: 12 }}>
-              <div style={{ textAlign: "left" }}>
-                <div style={{ color: "rgba(255,255,255,.28)", fontSize: 10, marginBottom: 3 }}>Capítulo {i + 1}</div>
-                <div style={{ color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: PF }}>{ch.title}</div>
-              </div>
-              <div style={{ color: "rgba(255,255,255,.3)", fontSize: 20, flexShrink: 0 }}>{open === i ? "−" : "+"}</div>
-            </button>
-            {open === i && (
-              <div style={{ padding: "0 20px 22px", color: "rgba(255,255,255,.68)", fontSize: 15, lineHeight: 1.78, whiteSpace: "pre-line", fontFamily: PF, fontStyle: "italic" }}>
-                {ch.content}
-              </div>
-            )}
-          </div>
-        ))}
 
-        <div style={{ background: "#0d0d0d", border: "1px solid rgba(255,255,255,.05)", borderRadius: 16, padding: "22px 20px", display: "flex", flexDirection: "column", alignItems: "center", gap: 10, opacity: .5 }}>
-          <div style={{ fontSize: 26 }}>🔒</div>
-          <p style={{ fontFamily: PF, fontStyle: "italic", color: "rgba(255,255,255,.45)", fontSize: 14, textAlign: "center", lineHeight: 1.6 }}>
-            "Este capítulo ainda está sendo escrito.<br />Em breve, juntos."
-          </p>
+      <div style={{ position: "relative" }}>
+        <div style={{ maxHeight: expanded ? "none" : 220, overflow: "hidden" }}>
+          {paragraphs.map(renderParagraph)}
+          {expanded && <div ref={endRef} style={{ height: 1 }} />}
         </div>
+
+        {!expanded && (
+          <div style={{
+            position: "absolute", bottom: 0, left: 0, right: 0, height: 90,
+            background: "linear-gradient(to bottom, transparent, #0d0d0d)",
+            pointerEvents: "none",
+          }} />
+        )}
       </div>
+
+      {!expanded && (
+        <div style={{ textAlign: "center", marginTop: 24 }}>
+          <button
+            onClick={handleExpand}
+            style={{
+              background: `linear-gradient(135deg, ${PINK}, ${PURPLE})`,
+              color: "#fff", border: "none", borderRadius: 24,
+              padding: "13px 30px", fontSize: 14, fontWeight: 700,
+              fontFamily: MO, cursor: "pointer", letterSpacing: ".5px",
+              boxShadow: `0 4px 20px ${PINK}55`,
+            }}
+          >
+            Ler tudo ❤️
+          </button>
+        </div>
+      )}
     </section>
   );
 }
