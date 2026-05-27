@@ -316,9 +316,10 @@ const GCSS = `
   @keyframes glow-pulse{ 0%,100%{box-shadow:0 0 18px ${PINK}44} 50%{box-shadow:0 0 36px ${PINK}88} }
   @keyframes eq-bar    { 0%{transform:scaleY(.2)} 100%{transform:scaleY(1)} }
   @keyframes heart-fall {
-    0%   { transform: translateY(0)     translateX(0)            rotate(-10deg); opacity: 1; }
-    80%  { opacity: .9; }
-    100% { transform: translateY(120vh) translateX(var(--drift)) rotate(20deg);  opacity: 0; }
+    0%   { transform: translateY(0)      translateX(0)            rotate(var(--rot0)); opacity: 0; }
+    6%   { opacity: 1; }
+    80%  { opacity: .85; }
+    100% { transform: translateY(115vh)  translateX(var(--drift)) rotate(var(--rot1)); opacity: 0; }
   }
 `;
 
@@ -1398,17 +1399,22 @@ function PageHistoria({ onStopMusic }: { onStopMusic: () => void }) {
 // ── Chuva de corações ─────────────────────────────────────────────────────────
 
 function HeartRain() {
-  const EMOJIS = ["❤️", "💕", "💖", "💗", "💓"];
+  const EMOJIS = ["❤️", "💕", "💖", "💗", "💓", "💝", "🩷"];
   const hearts = useMemo(() =>
-    Array.from({ length: 32 }, (_, i) => ({
-      id: i,
-      left:     Math.random() * 100,
-      delay:    Math.random() * 5,
-      duration: 4.5 + Math.random() * 4,
-      size:     16  + Math.random() * 20,
-      drift:    (Math.random() - 0.5) * 90,
-      emoji:    EMOJIS[Math.floor(Math.random() * EMOJIS.length)],
-    }))
+    Array.from({ length: 65 }, (_, i) => {
+      const spin = (Math.random() - 0.5) > 0 ? 1 : -1;
+      return {
+        id:       i,
+        left:     Math.random() * 100,
+        delay:    Math.random() * 3.5,
+        duration: 3.5 + Math.random() * 2,
+        size:     14  + Math.random() * 30,
+        drift:    (Math.random() - 0.5) * 130,
+        rot0:     spin * (10 + Math.random() * 20),
+        rot1:     spin * (180 + Math.random() * 180),
+        emoji:    EMOJIS[Math.floor(Math.random() * EMOJIS.length)],
+      };
+    })
   , []);
 
   return (
@@ -1418,12 +1424,14 @@ function HeartRain() {
           key={h.id}
           style={{
             position: "absolute",
-            left: `${h.left}%`,
-            top: -50,
+            left:     `${h.left}%`,
+            top:      -60,
             fontSize: h.size,
             lineHeight: 1,
-            animation: `heart-fall ${h.duration}s ${h.delay}s ease-in both`,
+            animation: `heart-fall ${h.duration}s ${h.delay}s cubic-bezier(.4,0,.6,1) both`,
             "--drift": `${h.drift}px`,
+            "--rot0":  `${h.rot0}deg`,
+            "--rot1":  `${h.rot1}deg`,
           } as React.CSSProperties}
         >
           {h.emoji}
