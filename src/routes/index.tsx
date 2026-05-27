@@ -146,33 +146,15 @@ const PHOTO_ITEMS_ONLY: Photo[] = ALL_PHOTOS.filter(p => p.mediaType !== "video"
 // ── Achievements ──────────────────────────────────────────────────────────────
 
 const UNLOCKED: Achievement[] = [
-  { emoji: "💪", name: "Superamos Momentos Difíceis", color: "#EF9F27" },
-  { emoji: "🔄", name: "Superamos um Término",        color: "#E24B4A" },
-  { emoji: "🥂", name: "10 Reveillons Juntos",         color: "#7F77DD" },
-  { emoji: "🏖️", name: "Cumuruxatiba",                color: "#378ADD" },
-  { emoji: "✈️", name: "1ª Viagem Juntos",            color: "#85B7EB" },
-  { emoji: "🌍", name: "1ª Viagem Internacional",     color: "#5DCAA5" },
-  { emoji: "👫", name: "Viagem com Amigos",           color: "#AFA9EC" },
-  { emoji: "⏳", name: "2 Meses Sem Parada",           color: "#EF9F27" },
-  { emoji: "🌴", name: "Califórnia",                  color: "#ED93B1" },
-  { emoji: "🥂", name: "Viagem a Sós",                color: "#FAC775" },
-  { emoji: "🏄", name: "1° Kite Trip",                color: "#5DCAA5" },
-  { emoji: "📸", name: "Book de 15",                  color: "#ED93B1" },
+  { emoji: "🏰", name: "Visitar a Disney",   color: "#ED93B1" },
+  { emoji: "🦘", name: "Visitar a Austrália", color: "#5DCAA5" },
+  { emoji: "🎓", name: "Formar Juntos",       color: "#FAC775" },
+  { emoji: "🎰", name: "Las Vegas",           color: "#7F77DD" },
 ];
 
 const LOCKED: Achievement[] = [
-  { emoji: "💍", name: "Noivado",              color: "#f9a8d4" },
-  { emoji: "👰", name: "Casamento",            color: "#fde68a" },
-  { emoji: "🌅", name: "Lua de Mel",           color: "#fed7aa" },
-  { emoji: "🎉", name: "Despedida de Solteiro",color: "#86efac" },
-  { emoji: "👶", name: "Primeiro Filho",       color: "#a5f3fc" },
-  { emoji: "🏠", name: "Nossa Casa Própria",   color: "#c4b5fd" },
-  { emoji: "✈️", name: "Costa Rica",           color: "#6ee7b7" },
-  { emoji: "🎂", name: "15 Anos Juntos",       color: "#fca5a5" },
-  { emoji: "🌍", name: "Volta ao Mundo",       color: "#93c5fd" },
-  { emoji: "🍼", name: "Segundo Filho",        color: "#f9a8d4" },
-  { emoji: "🐾", name: "Irmão da Mel",         color: "#86efac" },
-  { emoji: "🎓", name: "Nosso Negócio",        color: "#c4b5fd" },
+  { emoji: "🏖️", name: "Viagem Floripa",    color: "#85B7EB" },
+  { emoji: "🌴", name: "Viagem Costa Rica", color: "#6ee7b7" },
 ];
 
 // ── Carta ─────────────────────────────────────────────────────────────────────
