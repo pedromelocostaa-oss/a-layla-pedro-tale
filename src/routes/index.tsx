@@ -1152,9 +1152,9 @@ function PageGallery() {
           </div>
 
           {/* Legenda + botão próxima */}
-          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "32px 24px 52px", background: "linear-gradient(transparent,rgba(0,0,0,.88))", display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "40px 24px 52px", background: "linear-gradient(transparent,rgba(0,0,0,.92))", display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
             {current.legenda && (
-              <p style={{ color: "rgba(255,255,255,.85)", fontSize: 15, fontFamily: PF, fontStyle: "italic", textAlign: "center", lineHeight: 1.5, margin: 0 }}>
+              <p style={{ color: "#fff", fontSize: 15, fontFamily: PF, fontStyle: "italic", textAlign: "center", lineHeight: 1.55, margin: 0, textShadow: "0 1px 6px rgba(0,0,0,.7)" }}>
                 {current.legenda}
               </p>
             )}
@@ -1254,10 +1254,10 @@ function PageGallery() {
             )}
           </div>
 
-          <div style={{ padding: "14px 20px 36px", background: "linear-gradient(transparent,rgba(0,0,0,.8))", position: "absolute", bottom: 0, left: 0, right: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ padding: "20px 20px 36px", background: "linear-gradient(transparent,rgba(0,0,0,.92))", position: "absolute", bottom: 0, left: 0, right: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <button onClick={goPrev} style={{ background: "rgba(255,255,255,.12)", border: "none", borderRadius: "50%", width: 40, height: 40, color: "#fff", fontSize: 22, cursor: "pointer", opacity: lightbox === 0 ? .3 : 1 }}>‹</button>
             {lbPhoto.legenda
-              ? <p style={{ color: "rgba(255,255,255,.8)", fontSize: 15, fontFamily: PF, fontStyle: "italic", textAlign: "center", flex: 1, padding: "0 8px" }}>{lbPhoto.legenda}</p>
+              ? <p style={{ color: "#fff", fontSize: 15, fontFamily: PF, fontStyle: "italic", textAlign: "center", flex: 1, padding: "0 10px", lineHeight: 1.5, textShadow: "0 1px 6px rgba(0,0,0,.7)" }}>{lbPhoto.legenda}</p>
               : <div style={{ flex: 1 }} />
             }
             <button onClick={goNext} style={{ background: "rgba(255,255,255,.12)", border: "none", borderRadius: "50%", width: 40, height: 40, color: "#fff", fontSize: 22, cursor: "pointer", opacity: lightbox === ALL_PHOTOS.length - 1 ? .3 : 1 }}>›</button>
