@@ -306,7 +306,7 @@ function LockScreen({ onUnlock }: { onUnlock: () => void }) {
           Retrospectiva<br />dos 11 Anos
         </h1>
         <p style={{ color: "rgba(255,255,255,.35)", fontSize: 14, lineHeight: 1.5 }}>
-          qual é a data que você nunca esquece?
+          dia e mês em que tudo começou
         </p>
       </div>
 
