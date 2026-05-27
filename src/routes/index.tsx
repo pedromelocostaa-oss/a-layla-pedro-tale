@@ -974,12 +974,24 @@ function PageHero({ onBack }: { onBack: () => void }) {
       <h1 style={{ fontFamily: MO, fontSize: 36, fontWeight: 800, color: "#fff", margin: "0 0 6px", lineHeight: 1.15, letterSpacing: "-0.5px" }}>Layla & Pedro</h1>
       <p style={{ color: "rgba(255,255,255,.28)", fontSize: 13, marginBottom: 26 }}>14 de novembro de 2014</p>
 
-      <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", rowGap: 4 }}>
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", flexWrap: "wrap", rowGap: 16, columnGap: 0, padding: "12px 0" }}>
         {cells.map((c, i) => (
-          <div key={c.l} style={{ display: "flex", alignItems: "baseline" }}>
-            {i > 0 && <span style={{ color: "rgba(255,255,255,.13)", margin: "0 5px" }}>·</span>}
-            <span style={{ fontFamily: c.big ? PF : MO, fontWeight: 900, fontSize: c.big ? 22 : 16, color: c.big ? GREEN : "#fff" }}>{c.v}</span>
-            <span style={{ color: "rgba(255,255,255,.28)", fontSize: 10, marginLeft: 3, fontFamily: MO }}>{c.l}</span>
+          <div key={c.l} style={{ display: "flex", alignItems: "center" }}>
+            {i > 0 && (
+              <span style={{ color: "rgba(255,255,255,.12)", fontSize: 22, fontWeight: 300, margin: "0 10px", lineHeight: 1 }}>·</span>
+            )}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, minWidth: 40 }}>
+              <span style={{
+                fontFamily: PF, fontWeight: 700, fontSize: 34,
+                color: c.l === "anos" ? GREEN : "#fff",
+                lineHeight: 1, letterSpacing: "-0.5px",
+              }}>{c.v}</span>
+              <span style={{
+                fontFamily: MO, fontWeight: 500, fontSize: 9,
+                color: "rgba(255,255,255,.32)",
+                letterSpacing: "2px", textTransform: "uppercase",
+              }}>{c.l}</span>
+            </div>
           </div>
         ))}
       </div>
