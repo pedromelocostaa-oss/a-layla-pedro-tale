@@ -330,6 +330,8 @@ const GCSS = `
   @keyframes pop-in    { 0%{transform:scale(.85);opacity:0} 100%{transform:scale(1);opacity:1} }
   @keyframes fade-up   { 0%{transform:translateY(16px);opacity:0} 100%{transform:translateY(0);opacity:1} }
   @keyframes glow-pulse{ 0%,100%{box-shadow:0 0 18px ${PINK}44} 50%{box-shadow:0 0 36px ${PINK}88} }
+  @keyframes glow-pulse-gold{ 0%,100%{box-shadow:0 0 28px ${GOLD}22,0 4px 24px rgba(0,0,0,.4)} 50%{box-shadow:0 0 42px ${GOLD}44,0 4px 24px rgba(0,0,0,.4)} }
+  @keyframes unlock-bar{ 0%{width:0%} 100%{width:72%} }
   @keyframes eq-bar    { 0%{transform:scaleY(.2)} 100%{transform:scaleY(1)} }
   @keyframes heart-fall {
     0%   { transform: translateY(0)      translateX(0)            rotate(var(--rot0)); opacity: 0; }
@@ -1185,6 +1187,82 @@ function PageConquistas() {
   return (
     <section ref={ref as React.RefObject<HTMLElement>} style={{ padding: "40px 20px", borderBottom: "1px solid rgba(255,255,255,.06)", animation: visible ? "fade-up-in .6s ease both" : "none", opacity: visible ? undefined : 0 }}>
       <SecTitle>conquistas</SecTitle>
+
+      {/* ── Desbloqueando agora ── */}
+      <div style={{ marginBottom: 32 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          <div style={{ width: 8, height: 8, borderRadius: "50%", background: GOLD, animation: "pulse-op 1.2s ease-in-out infinite" }} />
+          <span style={{ color: GOLD, fontSize: 10, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", fontFamily: MO }}>
+            desbloqueando uma conquista
+          </span>
+        </div>
+
+        <div style={{
+          position: "relative", overflow: "hidden", borderRadius: 20,
+          background: "linear-gradient(135deg, #1c1400, #0f0a00)",
+          border: `1.5px solid ${GOLD}55`,
+          padding: "24px 20px",
+          boxShadow: `0 0 28px ${GOLD}22, 0 4px 24px rgba(0,0,0,.4)`,
+          animation: "glow-pulse-gold 2.5s ease-in-out infinite",
+        }}>
+          {/* shimmer */}
+          <div aria-hidden style={{
+            position: "absolute", inset: 0,
+            background: `linear-gradient(105deg, transparent 35%, ${GOLD}18 50%, transparent 65%)`,
+            backgroundSize: "200% 100%",
+            animation: "shimmer 2.2s ease-in-out infinite",
+          }} />
+
+          <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 18 }}>
+            {/* Emoji com glow */}
+            <div style={{
+              width: 64, height: 64, borderRadius: 18, flexShrink: 0,
+              background: `linear-gradient(135deg, ${GOLD}33, ${GOLD}11)`,
+              border: `1.5px solid ${GOLD}66`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 30,
+              boxShadow: `0 0 18px ${GOLD}44`,
+              animation: "scale-pop .6s ease both",
+            }}>
+              🏖️
+            </div>
+
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ color: GOLD, fontSize: 10, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 6, fontFamily: MO }}>
+                nova conquista
+              </div>
+              <div style={{ color: "#fff", fontSize: 16, fontWeight: 700, lineHeight: 1.3, marginBottom: 10, fontFamily: MO }}>
+                Viagem pra Floripa
+              </div>
+              <div style={{ color: "rgba(255,255,255,.45)", fontSize: 12, lineHeight: 1.4, fontFamily: PF, fontStyle: "italic" }}>
+                primeira viagem sozinhos ✈️
+              </div>
+            </div>
+
+            {/* Ícone de cadeado abrindo */}
+            <div style={{ fontSize: 22, animation: "pop-in .5s .3s ease both", opacity: 0, flexShrink: 0 }}>
+              🔓
+            </div>
+          </div>
+
+          {/* Barra de progresso */}
+          <div style={{ marginTop: 18, position: "relative" }}>
+            <div style={{ height: 4, borderRadius: 4, background: "rgba(255,255,255,.08)", overflow: "hidden" }}>
+              <div style={{
+                height: "100%", borderRadius: 4,
+                background: `linear-gradient(90deg, ${GOLD}aa, ${GOLD})`,
+                width: "72%",
+                boxShadow: `0 0 8px ${GOLD}88`,
+                animation: "unlock-bar 1.2s .2s cubic-bezier(.4,0,.2,1) both",
+              }} />
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
+              <span style={{ color: "rgba(255,255,255,.25)", fontSize: 10, fontFamily: MO }}>em andamento</span>
+              <span style={{ color: GOLD, fontSize: 10, fontWeight: 700, fontFamily: MO }}>quase lá ✨</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <SmLabel>CONQUISTADAS ({UNLOCKED.length})</SmLabel>
       <AchGrid items={UNLOCKED} mb={24} />
