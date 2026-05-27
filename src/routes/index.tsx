@@ -276,6 +276,22 @@ function shuffle<T>(arr: T[]): T[] {
 
 // ── Hooks ─────────────────────────────────────────────────────────────────────
 
+/** Retorna true quando o elemento entra na viewport (once). */
+function useVisible(threshold = 0.15) {
+  const ref = useRef<HTMLElement>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current; if (!el) return;
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
+      { threshold }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [threshold]);
+  return { ref, visible };
+}
+
 function useCountdown() {
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
@@ -320,6 +336,14 @@ const GCSS = `
     6%   { opacity: 1; }
     80%  { opacity: .85; }
     100% { transform: translateY(115vh)  translateX(var(--drift)) rotate(var(--rot1)); opacity: 0; }
+  }
+  @keyframes fade-up-in {
+    0%   { opacity: 0; transform: translateY(22px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scale-pop {
+    0%   { opacity: 0; transform: scale(.88); }
+    100% { opacity: 1; transform: scale(1); }
   }
 `;
 
@@ -540,6 +564,15 @@ function StoriesShell({
   slide: number; goSlide: (n: number) => void; goPage: () => void;
 }) {
   const tx = useRef({ x: 0, y: 0 });
+
+  // Preload próximo slide para eliminar delay na transição
+  useEffect(() => {
+    const next = STORY_SLIDES[slide + 1];
+    if (next && next.type === "photo" && next.src) {
+      const img = new Image();
+      img.src = next.src;
+    }
+  }, [slide]);
 
   function handleTap(e: React.MouseEvent) {
     if ((e.target as HTMLElement).closest("button,iframe,a")) return;
@@ -843,6 +876,8 @@ function SlidePhoto({ config }: { config: PhotoSlideConfig }) {
         <img
           src={src}
           alt={config.label}
+          loading="eager"
+          decoding="async"
           onError={handleError}
           style={{ width: "100%", height: "100%", objectFit: (config as any).fitMode ?? "cover", display: "block" }}
         />
@@ -877,16 +912,25 @@ function SlidePhoto({ config }: { config: PhotoSlideConfig }) {
 function SlideEnd({ onGoPage }: { onGoPage: () => void }) {
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "0 32px" }}>
-      <p style={{ color: "rgba(255,255,255,.38)", fontSize: 12, letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: 20 }}>e tem muito mais</p>
-      <h2 style={{ fontFamily: PF, fontSize: 36, fontWeight: 900, color: "#fff", lineHeight: 1.3, marginBottom: 14 }}>
+      <p style={{ color: "rgba(255,255,255,.38)", fontSize: 12, letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: 20, animation: "fade-up-in .6s ease both" }}>e tem muito mais</p>
+      <h2 style={{ fontFamily: PF, fontSize: 40, fontWeight: 900, color: "#fff", lineHeight: 1.2, marginBottom: 16, animation: "fade-up-in .7s .1s ease both" }}>
         para lembrar
       </h2>
-      <p style={{ color: "rgba(255,255,255,.38)", fontSize: 15, marginBottom: 52 }}>deslize para baixo para ver tudo</p>
+      <p style={{ color: "rgba(255,255,255,.45)", fontSize: 15, marginBottom: 40, animation: "fade-up-in .7s .2s ease both" }}>
+        tem muito mais esperando por você
+      </p>
       <button
         onClick={e => { e.stopPropagation(); onGoPage(); }}
-        style={{ background: "transparent", border: "none", cursor: "pointer", animation: "bounce-y 1.5s ease-in-out infinite", color: PINK, fontSize: 36, lineHeight: 1 }}
+        style={{
+          background: `linear-gradient(135deg, ${PINK}, ${PURPLE})`,
+          border: "none", borderRadius: 28, cursor: "pointer",
+          padding: "16px 36px", color: "#fff",
+          fontFamily: MO, fontWeight: 700, fontSize: 16, letterSpacing: ".4px",
+          boxShadow: `0 6px 28px ${PINK}55`,
+          animation: "scale-pop .6s .3s ease both",
+        }}
       >
-        ↓
+        ver tudo ✨
       </button>
     </div>
   );
@@ -1003,8 +1047,9 @@ function PageHero({ onBack }: { onBack: () => void }) {
 // ── Conquistas ────────────────────────────────────────────────────────────────
 
 function PageConquistas() {
+  const { ref, visible } = useVisible();
   return (
-    <section style={{ padding: "40px 20px", borderBottom: "1px solid rgba(255,255,255,.06)" }}>
+    <section ref={ref as React.RefObject<HTMLElement>} style={{ padding: "40px 20px", borderBottom: "1px solid rgba(255,255,255,.06)", animation: visible ? "fade-up-in .6s ease both" : "none", opacity: visible ? undefined : 0 }}>
       <SecTitle>conquistas</SecTitle>
 
       <SmLabel>CONQUISTADAS ({UNLOCKED.length})</SmLabel>
@@ -1018,12 +1063,12 @@ function PageConquistas() {
 function AchGrid({ items, locked, mb }: { items: Achievement[]; locked?: boolean; mb?: number }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: mb ?? 0 }}>
-      {items.map(a => <AchCard key={a.name} a={a} locked={locked} />)}
+      {items.map((a, i) => <AchCard key={a.name} a={a} locked={locked} idx={i} />)}
     </div>
   );
 }
 
-function AchCard({ a, locked }: { a: Achievement; locked?: boolean }) {
+function AchCard({ a, locked, idx }: { a: Achievement; locked?: boolean; idx?: number }) {
   return (
     <div style={{
       background: locked ? "#111" : "#1e1e1e",
@@ -1033,6 +1078,7 @@ function AchCard({ a, locked }: { a: Achievement; locked?: boolean }) {
       opacity: locked ? 0.4 : 1,
       filter: locked ? "grayscale(.5)" : "none",
       position: "relative", overflow: "hidden",
+      animation: `scale-pop .5s ${((idx ?? 0) % 6) * 0.07}s ease both`,
     }}>
       {locked && <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(105deg,transparent 40%,rgba(255,255,255,.025) 50%,transparent 60%)", backgroundSize: "200% 100%", animation: "shimmer 2.6s infinite linear" }} />}
       <div style={{ fontSize: 20 }}>{a.emoji}</div>
@@ -1329,30 +1375,14 @@ function VideoThumb({ src, fill }: { src: string; fill?: boolean }) {
 
 // ── Nossa História ────────────────────────────────────────────────────────────
 
-function PageHistoria({ onStopMusic }: { onStopMusic: () => void }) {
+function PageHistoria({ onStopMusic: _onStopMusic }: { onStopMusic: () => void }) {
   const [expanded, setExpanded] = useState(false);
   const [showHearts, setShowHearts] = useState(false);
-  const endRef = useRef<HTMLDivElement>(null);
-  const musicStopped = useRef(false);
-
-  useEffect(() => {
-    if (!expanded) return;
-    const el = endRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setShowHearts(true); },
-      { threshold: 0.6 }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [expanded]);
+  const { ref: secRef, visible: secVisible } = useVisible();
 
   function handleExpand() {
-    if (!musicStopped.current) {
-      musicStopped.current = true;
-      onStopMusic();
-    }
     setExpanded(true);
+    setShowHearts(true);
   }
 
   const paragraphs = CARTA.split("\n\n").filter(p => p.trim());
@@ -1381,14 +1411,13 @@ function PageHistoria({ onStopMusic }: { onStopMusic: () => void }) {
   }
 
   return (
-    <section style={{ padding: "40px 20px", borderBottom: "1px solid rgba(255,255,255,.06)" }}>
+    <section ref={secRef as React.RefObject<HTMLElement>} style={{ padding: "40px 20px", borderBottom: "1px solid rgba(255,255,255,.06)", animation: secVisible ? "fade-up-in .65s ease both" : "none", opacity: secVisible ? undefined : 0 }}>
       {showHearts && <HeartRain />}
       <SecTitle>nossa história</SecTitle>
 
       <div style={{ position: "relative" }}>
         <div style={{ maxHeight: expanded ? "none" : 220, overflow: "hidden" }}>
           {paragraphs.map(renderParagraph)}
-          {expanded && <div ref={endRef} style={{ height: 1 }} />}
         </div>
 
         {!expanded && (
@@ -1425,17 +1454,17 @@ function PageHistoria({ onStopMusic }: { onStopMusic: () => void }) {
 function HeartRain() {
   const EMOJIS = ["❤️", "💕", "💖", "💗", "💓", "💝", "🩷"];
   const hearts = useMemo(() =>
-    Array.from({ length: 65 }, (_, i) => {
+    Array.from({ length: 80 }, (_, i) => {
       const spin = (Math.random() - 0.5) > 0 ? 1 : -1;
       return {
         id:       i,
         left:     Math.random() * 100,
-        delay:    Math.random() * 3.5,
-        duration: 3.5 + Math.random() * 2,
-        size:     14  + Math.random() * 30,
-        drift:    (Math.random() - 0.5) * 130,
+        delay:    Math.random() * 5,
+        duration: 4 + Math.random() * 2.5,
+        size:     14  + Math.random() * 32,
+        drift:    (Math.random() - 0.5) * 140,
         rot0:     spin * (10 + Math.random() * 20),
-        rot1:     spin * (180 + Math.random() * 180),
+        rot1:     spin * (180 + Math.random() * 200),
         emoji:    EMOJIS[Math.floor(Math.random() * EMOJIS.length)],
       };
     })
