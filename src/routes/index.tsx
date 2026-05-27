@@ -927,17 +927,9 @@ function PageHero({ onBack }: { onBack: () => void }) {
 // ── Conquistas ────────────────────────────────────────────────────────────────
 
 function PageConquistas() {
-  const total = UNLOCKED.length + LOCKED.length;
-  const pct   = Math.round((UNLOCKED.length / total) * 100);
   return (
     <section style={{ padding: "40px 20px", borderBottom: "1px solid rgba(255,255,255,.06)" }}>
       <SecTitle>conquistas</SecTitle>
-      <div style={{ display: "flex", justifyContent: "space-between", color: "rgba(255,255,255,.4)", fontSize: 12, fontWeight: 700, marginBottom: 5 }}>
-        <span>{UNLOCKED.length} / {total}</span><span>{pct}%</span>
-      </div>
-      <div style={{ background: "#2a2a2a", borderRadius: 4, height: 5, overflow: "hidden", marginBottom: 20 }}>
-        <div style={{ width: `${pct}%`, height: "100%", background: `linear-gradient(90deg,${PURPLE},${PINK})` }} />
-      </div>
 
       <SmLabel>CONQUISTADAS ({UNLOCKED.length})</SmLabel>
       <AchGrid items={UNLOCKED} mb={24} />
