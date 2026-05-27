@@ -1287,20 +1287,44 @@ function PhotoImg({ photo, fill, contain }: { photo: Photo; fill?: boolean; cont
   }
 
   if (isVideo) {
-    // Mosaico: thumbnail escuro com ícone de play
-    const boxStyle: React.CSSProperties = fill
-      ? { ...wrapFill, background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center" }
-      : { width: "100%", aspectRatio: "16/9", background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center" };
-    return (
-      <div style={boxStyle}>
-        <div style={{ width: 44, height: 44, borderRadius: "50%", background: "rgba(255,255,255,.18)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
-        </div>
-      </div>
-    );
+    return <VideoThumb src={photo.src} fill={fill} />;
   }
 
   return <img src={photo.src} alt={photo.legenda} loading="lazy" decoding="async" onError={() => setErr(true)} style={imgStyle} />;
+}
+
+function VideoThumb({ src, fill }: { src: string; fill?: boolean }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  const wrapStyle: React.CSSProperties = fill
+    ? { position: "absolute", inset: 0, width: "100%", height: "100%", background: "#111", overflow: "hidden" }
+    : { width: "100%", aspectRatio: "9/16", background: "#111", overflow: "hidden", position: "relative" };
+
+  return (
+    <div style={wrapStyle}>
+      <video
+        ref={ref}
+        src={src}
+        preload="metadata"
+        muted
+        playsInline
+        onLoadedMetadata={() => { if (ref.current) ref.current.currentTime = 1.5; }}
+        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+      />
+      <div style={{
+        position: "absolute", inset: 0,
+        background: "rgba(0,0,0,.2)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        <div style={{
+          width: 44, height: 44, borderRadius: "50%",
+          background: "rgba(255,255,255,.22)", backdropFilter: "blur(6px)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ── Nossa História ────────────────────────────────────────────────────────────
