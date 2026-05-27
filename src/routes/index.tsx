@@ -11,8 +11,9 @@ export const Route = createFileRoute("/")({
 
 const PIN_CORRECT = "1411";
 const START_DATE   = new Date("2014-11-14T00:00:00");
-const SPOTIFY_EMBED =
-  "https://open.spotify.com/embed/track/71zgAw6PFhleZnH23jAzXK?utm_source=generator&autoplay=1&theme=0";
+// Um Amor Puro – Djavan (Ao Vivo)
+const SPOTIFY_TRACK_ID = "3PlKQNlbL4767rND3HnqSI";
+const SPOTIFY_EMBED    = `https://open.spotify.com/embed/track/${SPOTIFY_TRACK_ID}?autoplay=1&utm_source=generator&theme=0`;
 
 const PINK   = "#D4537E";
 const GREEN  = "#5DCAA5";
@@ -33,7 +34,7 @@ type Achievement = { emoji: string; name: string; color: string };
 // Se o arquivo não existir, o slide mostra um placeholder bonito.
 const STORY_SLIDES = [
   {
-    type: "counter" as const,
+    type: "music" as const,
   },
   {
     type: "photo" as const,
@@ -249,15 +250,16 @@ const GCSS = `
   @keyframes pop-in    { 0%{transform:scale(.85);opacity:0} 100%{transform:scale(1);opacity:1} }
   @keyframes fade-up   { 0%{transform:translateY(16px);opacity:0} 100%{transform:translateY(0);opacity:1} }
   @keyframes glow-pulse{ 0%,100%{box-shadow:0 0 18px ${PINK}44} 50%{box-shadow:0 0 36px ${PINK}88} }
+  @keyframes eq-bar    { 0%{transform:scaleY(.2)} 100%{transform:scaleY(1)} }
 `;
 
 // ── App root ──────────────────────────────────────────────────────────────────
 
 function App() {
-  const [screen, setScreen] = useState<Screen>("lock");
-  const [slide,  setSlide]  = useState(0);
-  const [alpha,  setAlpha]  = useState(1);
-  const [spotOpen, setSpotOpen] = useState(false);
+  const [screen,  setScreen]  = useState<Screen>("lock");
+  const [slide,   setSlide]   = useState(0);
+  const [alpha,   setAlpha]   = useState(1);
+  const [musicOn, setMusicOn] = useState(false);
 
   function fadeTo(fn: () => void, ms = 420) {
     setAlpha(0);
@@ -274,6 +276,18 @@ function App() {
   return (
     <>
       <style>{GCSS}</style>
+
+      {/* Spotify player oculto — persiste em todas as telas */}
+      {musicOn && (
+        <iframe
+          key="spotify-bg"
+          title="background music"
+          src={SPOTIFY_EMBED}
+          style={{ position: "fixed", left: -9999, top: -9999, width: 1, height: 1, opacity: 0, pointerEvents: "none", border: "none" }}
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        />
+      )}
+
       <div style={{ maxWidth: 430, margin: "0 auto", minHeight: "100dvh", background: "#0d0d0d", position: "relative", fontFamily: MO }}>
         <div style={{ opacity: alpha, transition: `opacity ${screen === "stories" ? ".42s" : ".6s"} ease` }}>
           {screen === "lock"    && <LockScreen    onUnlock={() => fadeTo(() => setScreen("unlock"))} />}
@@ -283,11 +297,15 @@ function App() {
               slide={slide}
               goSlide={goSlide}
               goPage={goPage}
-              spotOpen={spotOpen}
-              setSpotOpen={setSpotOpen}
+              onMusicStart={() => setMusicOn(true)}
             />
           )}
-          {screen === "page"    && <FullPage onBackToStories={() => fadeTo(() => { setScreen("stories"); setSlide(0); })} />}
+          {screen === "page" && (
+            <FullPage
+              onBackToStories={() => fadeTo(() => { setScreen("stories"); setSlide(0); })}
+              onStopMusic={() => setMusicOn(false)}
+            />
+          )}
         </div>
       </div>
     </>
@@ -453,23 +471,33 @@ function UnlockMessage({ onStart }: { onStart: () => void }) {
 
 // ── Stories shell ─────────────────────────────────────────────────────────────
 
-const STORY_BKGS = ["#0a1a14", "#1a0a12", "#0a1f18", "#0d0d1a", "#1a1000", "#1a0a12"];
+const STORY_BKGS = ["#050805", "#1a0a12", "#0a1f18", "#0d0d1a", "#1a1000", "#1a0a12"];
 
 function StoriesShell({
-  slide, goSlide, goPage, spotOpen, setSpotOpen,
+  slide, goSlide, goPage, onMusicStart,
 }: {
   slide: number; goSlide: (n: number) => void; goPage: () => void;
-  spotOpen: boolean; setSpotOpen: (v: boolean) => void;
+  onMusicStart: () => void;
 }) {
-  const tx = useRef({ x: 0, y: 0 });
+  const tx            = useRef({ x: 0, y: 0 });
+  const musicStarted  = useRef(false);
 
   function handleTap(e: React.MouseEvent) {
     if ((e.target as HTMLElement).closest("button,iframe,a")) return;
     const x = e.clientX;
     const w = (e.currentTarget as HTMLElement).clientWidth;
-    if (x < w * 0.3) goSlide(slide - 1);
-    else if (slide < STORY_SLIDES.length - 1) goSlide(slide + 1);
-    else goPage();
+    if (x < w * 0.3) {
+      goSlide(slide - 1);
+    } else if (slide < STORY_SLIDES.length - 1) {
+      // Primeira vez que avança do slide de música → inicia player
+      if (slide === 0 && !musicStarted.current) {
+        musicStarted.current = true;
+        onMusicStart();
+      }
+      goSlide(slide + 1);
+    } else {
+      goPage();
+    }
   }
 
   function onTouchStart(e: React.TouchEvent) {
@@ -499,13 +527,11 @@ function StoriesShell({
       <div style={{ flex: 1, overflow: "hidden", position: "relative" }}>
         {(() => {
           const s = STORY_SLIDES[slide];
-          if (s.type === "counter") return <SlideCounter />;
-          if (s.type === "photo")   return <SlidePhoto config={s} />;
-          if (s.type === "end")     return <SlideEnd onGoPage={goPage} />;
+          if (s.type === "music") return <SlideMusicIntro />;
+          if (s.type === "photo") return <SlidePhoto config={s} />;
+          if (s.type === "end")   return <SlideEnd onGoPage={goPage} />;
         })()}
       </div>
-
-      <MiniPlayer open={spotOpen} onToggle={() => setSpotOpen(!spotOpen)} />
     </div>
   );
 }
@@ -523,7 +549,113 @@ function StoryProgress({ current, total }: { current: number; total: number }) {
   );
 }
 
-// ── Story slide: Counter ──────────────────────────────────────────────────────
+// ── Story slide: Music intro ──────────────────────────────────────────────────
+
+function SlideMusicIntro() {
+  const EQ_BARS = [
+    { h: "45%", delay: "0s",    dur: "0.75s" },
+    { h: "80%", delay: "0.12s", dur: "0.65s" },
+    { h: "55%", delay: "0.06s", dur: "0.90s" },
+    { h: "95%", delay: "0.20s", dur: "0.70s" },
+    { h: "65%", delay: "0.03s", dur: "0.80s" },
+    { h: "85%", delay: "0.16s", dur: "0.68s" },
+    { h: "50%", delay: "0.09s", dur: "0.85s" },
+  ];
+
+  return (
+    <div style={{ height: "100%", position: "relative", overflow: "hidden", background: "#050805" }}>
+
+      {/* Foto do casal ao fundo — bem escurecida */}
+      <img
+        src="/fotos/casal-01.jpg"
+        alt="nós"
+        onError={e => { (e.target as HTMLElement).style.display = "none"; }}
+        style={{
+          position: "absolute", inset: 0, width: "100%", height: "100%",
+          objectFit: "cover", opacity: 0.22,
+          filter: "brightness(0.5) saturate(0.2) contrast(1.15)",
+        }}
+      />
+
+      {/* Raios de holofote vindos de cima */}
+      <div aria-hidden style={{
+        position: "absolute", inset: 0,
+        background: [
+          "radial-gradient(ellipse 45% 30% at 50% 0%, rgba(180,230,180,.07) 0%, transparent 100%)",
+          "radial-gradient(ellipse 20% 50% at 30% 0%, rgba(200,255,200,.04) 0%, transparent 100%)",
+          "radial-gradient(ellipse 20% 50% at 70% 0%, rgba(200,255,200,.04) 0%, transparent 100%)",
+        ].join(","),
+        pointerEvents: "none",
+      }} />
+
+      {/* Gradiente dark de cima pra baixo */}
+      <div aria-hidden style={{
+        position: "absolute", inset: 0,
+        background: "linear-gradient(180deg, rgba(0,0,0,.5) 0%, rgba(0,0,0,.1) 35%, rgba(0,0,0,.65) 65%, rgba(0,0,0,.97) 100%)",
+        pointerEvents: "none",
+      }} />
+
+      {/* Conteúdo principal — alinhado ao rodapé */}
+      <div style={{
+        position: "absolute", inset: 0,
+        display: "flex", flexDirection: "column",
+        alignItems: "center", justifyContent: "flex-end",
+        padding: "0 32px 60px",
+        textAlign: "center",
+      }}>
+
+        {/* Equalizador animado */}
+        <div style={{ display: "flex", gap: 4, alignItems: "flex-end", height: 28, marginBottom: 30 }}>
+          {EQ_BARS.map((b, i) => (
+            <div key={i} style={{
+              width: 3, height: b.h, borderRadius: 2,
+              background: "#1DB954",
+              transformOrigin: "bottom",
+              animation: `eq-bar ${b.dur} ${b.delay} ease-in-out infinite alternate`,
+            }} />
+          ))}
+        </div>
+
+        {/* Título da música */}
+        <p style={{
+          fontFamily: PF, fontSize: 36, fontWeight: 900, fontStyle: "italic",
+          color: "#fff", lineHeight: 1.15, marginBottom: 10,
+          textShadow: "0 4px 28px rgba(0,0,0,.9)",
+          animation: "fade-up .7s ease both",
+        }}>
+          Um Amor Puro
+        </p>
+
+        {/* Artista */}
+        <p style={{
+          fontFamily: MO, fontSize: 12, fontWeight: 700,
+          color: "rgba(255,255,255,.45)",
+          letterSpacing: "5px", textTransform: "uppercase",
+          marginBottom: 28,
+          animation: "fade-up .7s .1s ease both",
+        }}>
+          Djavan
+        </p>
+
+        {/* Barra de progresso decorativa */}
+        <div style={{ width: "100%", height: 2, background: "rgba(255,255,255,.1)", borderRadius: 1, marginBottom: 24 }}>
+          <div style={{ height: "100%", width: "18%", background: "linear-gradient(90deg,#1DB954,#1ed760)", borderRadius: 1 }} />
+        </div>
+
+        {/* Dica */}
+        <p style={{
+          color: "rgba(255,255,255,.2)", fontSize: 11,
+          letterSpacing: "2px", textTransform: "uppercase",
+          animation: "pulse-op 2.5s ease infinite",
+        }}>
+          toque para avançar ♫
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ── Story slide: Counter (mantido como fallback) ───────────────────────────────
 
 function SlideCounter() {
   const t = useCountdown();
@@ -671,7 +803,7 @@ function MiniPlayer({ open, onToggle }: { open: boolean; onToggle: () => void })
 
 // ── Full page ─────────────────────────────────────────────────────────────────
 
-function FullPage({ onBackToStories }: { onBackToStories: () => void }) {
+function FullPage({ onBackToStories, onStopMusic }: { onBackToStories: () => void; onStopMusic: () => void }) {
   const ref  = useRef<HTMLDivElement>(null);
   const [showTop, setShowTop] = useState(false);
   useEffect(() => {
@@ -687,7 +819,7 @@ function FullPage({ onBackToStories }: { onBackToStories: () => void }) {
       <PageHero   onBack={onBackToStories} />
       <PageConquistas />
       <PageGallery />
-      <PageHistoria />
+      <PageHistoria onStopMusic={onStopMusic} />
       <PageFim />
 
       {showTop && (
@@ -944,15 +1076,26 @@ function PhotoImg({ photo, fill }: { photo: Photo; fill?: boolean }) {
 
 // ── Nossa História ────────────────────────────────────────────────────────────
 
-function PageHistoria() {
+function PageHistoria({ onStopMusic }: { onStopMusic: () => void }) {
   const [open, setOpen] = useState<number | null>(null);
+  const musicStopped = useRef(false);
+
+  function handleChapterClick(i: number) {
+    // Para a música na primeira vez que ela abre um capítulo
+    if (!musicStopped.current) {
+      musicStopped.current = true;
+      onStopMusic();
+    }
+    setOpen(open === i ? null : i);
+  }
+
   return (
     <section style={{ padding: "40px 20px", borderBottom: "1px solid rgba(255,255,255,.06)" }}>
       <SecTitle>nossa história</SecTitle>
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {CHAPTERS.map((ch, i) => (
           <div key={i} style={{ background: "#141414", border: `1px solid ${open === i ? PINK + "40" : "rgba(255,255,255,.07)"}`, borderRadius: 16, overflow: "hidden", transition: "border-color .2s" }}>
-            <button onClick={() => setOpen(open === i ? null : i)} style={{ width: "100%", background: "transparent", border: "none", padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", gap: 12 }}>
+            <button onClick={() => handleChapterClick(i)} style={{ width: "100%", background: "transparent", border: "none", padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", gap: 12 }}>
               <div style={{ textAlign: "left" }}>
                 <div style={{ color: "rgba(255,255,255,.28)", fontSize: 10, marginBottom: 3 }}>Capítulo {i + 1}</div>
                 <div style={{ color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: PF }}>{ch.title}</div>
