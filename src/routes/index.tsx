@@ -57,12 +57,13 @@ const STORY_SLIDES = [
   },
   {
     type: "photo" as const,
-    src: "/fotos/internacional.jpg",
+    src: "/fotos/internacional.png",
     fallbackSrc: coupleFestival,
     label: "1ª Viagem Internacional",
     sublabel: "o mundo ficou pequeno",
     accent: PURPLE,
     grad: "linear-gradient(160deg,#0d0a1f,#0d0d1a)",
+    fitMode: "contain" as const,
   },
   {
     type: "photo" as const,
