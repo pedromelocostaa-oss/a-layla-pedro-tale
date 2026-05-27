@@ -374,22 +374,41 @@ const GCSS = `
     0%   { transform: translate(0,0) rotate(0deg) scale(1); opacity: 1; }
     100% { transform: translate(var(--px), var(--py)) rotate(var(--pr)) scale(0); opacity: 0; }
   }
+  @keyframes curtain-drop {
+    0%   { transform: translateY(-100%); }
+    100% { transform: translateY(0); }
+  }
+  @keyframes curtain-lift {
+    0%   { transform: translateY(0); }
+    100% { transform: translateY(-100%); }
+  }
+  @keyframes screen-enter {
+    0%   { opacity: 0; transform: translateY(12px) scale(.97); }
+    100% { opacity: 1; transform: translateY(0)    scale(1);   }
+  }
+  @keyframes curtain-icon {
+    0%   { opacity: 0; transform: scale(.4) rotate(-20deg); }
+    50%  { opacity: 1; transform: scale(1.15) rotate(8deg); }
+    100% { opacity: 0; transform: scale(.8) rotate(0deg);  }
+  }
 `;
 
 // ── App root ──────────────────────────────────────────────────────────────────
 
+type CurtainState = { active: boolean; phase: "in" | "out"; color: string; icon: string };
+
 function App() {
-  const [screen, setScreen] = useState<Screen>("lock");
-  const [slide,  setSlide]  = useState(0);
-  const [alpha,  setAlpha]  = useState(1);
+  const [screen,    setScreen]    = useState<Screen>("lock");
+  const [slide,     setSlide]     = useState(0);
+  const [screenKey, setScreenKey] = useState(0);
+  const [curtain,   setCurtain]   = useState<CurtainState>({ active: false, phase: "in", color: "#0d0d0d", icon: "💝" });
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Chamado DENTRO do handler de clique → browser permite autoplay
   function startMusic() {
     if (!audioRef.current) {
-      const a    = new Audio(MUSIC_SRC);
-      a.loop     = true;
-      a.volume   = 0.75;
+      const a  = new Audio(MUSIC_SRC);
+      a.loop   = true;
+      a.volume = 0.75;
       audioRef.current = a;
     }
     audioRef.current.play().catch(() => {});
@@ -402,27 +421,53 @@ function App() {
     }
   }
 
-  function fadeTo(fn: () => void, ms = 420) {
-    setAlpha(0);
-    setTimeout(() => { fn(); setAlpha(1); }, ms);
+  /** Executa fn com uma cortina colorida que desce e sobe */
+  function transition(fn: () => void, color = "#1a0a12", icon = "💝") {
+    setCurtain({ active: true, phase: "in", color, icon });
+    setTimeout(() => {
+      fn();
+      setScreenKey(k => k + 1);
+      setCurtain({ active: true, phase: "out", color, icon });
+      setTimeout(() => setCurtain(c => ({ ...c, active: false })), 500);
+    }, 400);
   }
 
   function goSlide(n: number) {
     if (n < 0 || n >= STORY_SLIDES.length) return;
-    fadeTo(() => setSlide(n));
+    setSlide(n); // animação gerenciada pelo StoriesShell (slide-from-right/left)
   }
 
-  function goPage() { fadeTo(() => setScreen("page"), 600); }
+  function goPage() {
+    transition(() => setScreen("page"), "#0a0a12", "✨");
+  }
 
   return (
     <>
       <style>{GCSS}</style>
-      <div style={{ maxWidth: 430, margin: "0 auto", minHeight: "100dvh", background: "#0d0d0d", position: "relative", fontFamily: MO }}>
-        <div style={{ opacity: alpha, transition: `opacity ${screen === "stories" ? ".42s" : ".6s"} ease` }}>
-          {screen === "lock"   && <LockScreen    onUnlock={() => fadeTo(() => setScreen("unlock"))} />}
-          {screen === "unlock" && <UnlockMessage onStart={() => fadeTo(() => setScreen("stories"))} onMusicStart={startMusic} />}
-          {screen === "stories" && <StoriesShell slide={slide} goSlide={goSlide} goPage={goPage} />}
-          {screen === "page"   && <FullPage onBackToStories={() => fadeTo(() => { setScreen("stories"); setSlide(0); })} onStopMusic={stopMusic} />}
+      <div style={{ maxWidth: 430, margin: "0 auto", minHeight: "100dvh", background: "#0d0d0d", position: "relative", fontFamily: MO, overflow: "hidden" }}>
+
+        {/* ── Cortina de transição ── */}
+        {curtain.active && (
+          <div aria-hidden style={{
+            position: "fixed", inset: 0, zIndex: 9999, pointerEvents: "none",
+            background: `linear-gradient(160deg, ${curtain.color}, #080808)`,
+            animation: curtain.phase === "in"
+              ? "curtain-drop .4s cubic-bezier(.77,0,.18,1) both"
+              : "curtain-lift .45s cubic-bezier(.77,0,.18,1) both",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <span style={{ fontSize: 52, animation: "curtain-icon .6s ease both" }}>
+              {curtain.icon}
+            </span>
+          </div>
+        )}
+
+        {/* ── Tela ativa ── */}
+        <div key={screenKey} style={{ animation: "screen-enter .45s .1s ease both", opacity: 0 }}>
+          {screen === "lock"    && <LockScreen    onUnlock={() => transition(() => setScreen("unlock"), PINK, "💝")} />}
+          {screen === "unlock"  && <UnlockMessage onStart={() => transition(() => setScreen("stories"), "#1a0a12", "🎬")} onMusicStart={startMusic} />}
+          {screen === "stories" && <StoriesShell  slide={slide} goSlide={goSlide} goPage={goPage} />}
+          {screen === "page"    && <FullPage       onBackToStories={() => transition(() => { setScreen("stories"); setSlide(0); }, "#0d0d0d", "◀")} onStopMusic={stopMusic} />}
         </div>
       </div>
     </>
