@@ -82,37 +82,39 @@ const STORY_SLIDES = [
 
 // ── Photo gallery data ────────────────────────────────────────────────────────
 
-const p2 = (n: number) => String(n).padStart(2, "0");
+const p3 = (n: number) => String(n).padStart(3, "0");
+
+// Números dos heics que foram convertidos com sucesso (alguns falharam)
+const HEIC_NUMS = [
+  1,2,3,4,5,6,7,8,9,10,11,
+  13,14,
+  16,17,18,19,20,21,22,23,24,25,26,27,
+  31,32,33,34,
+  36,37,38,
+  40,41,42,43,44,45,
+  47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,
+  74,75,76,77,78,79,80,81,
+  82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,
+  101,102,103,104,105,106,107,
+  111,
+  113,114,115,116,117,118,119,120,121,122,123,124,125,
+  135,136,137,
+];
+
+const FOTO_PHOTOS: Photo[] = Array.from({ length: 74 }, (_, i) => ({
+  src: `/fotos/foto-${p3(i + 1)}.jpg`,
+  legenda: "Memória",
+}));
+
+const HEIC_PHOTOS: Photo[] = HEIC_NUMS.map(n => ({
+  src: `/fotos/heic-${p3(n)}.jpg`,
+  legenda: "Memória",
+}));
 
 const PHOTO_CATEGORIES: { label: string; photos: Photo[] }[] = [
   {
-    label: "Casal",
-    photos: Array.from({ length: 24 }, (_, i) => ({
-      src: `/fotos/casal-${p2(i + 1)}.jpg`,
-      legenda: "Casal",
-    })),
-  },
-  {
-    label: "Família & Amigos",
-    photos: Array.from({ length: 7 }, (_, i) => ({
-      src: `/fotos/familia-${p2(i + 1)}.jpg`,
-      legenda: "Família & Amigos",
-    })),
-  },
-  {
-    label: "Praia",
-    photos: [{ src: "/fotos/praia-01.jpg", legenda: "Praia" }],
-  },
-  {
-    label: "A Mel",
-    photos: [{ src: "/fotos/mel-01.jpg", legenda: "A Mel" }],
-  },
-  {
-    label: "Mais memórias",
-    photos: Array.from({ length: 26 }, (_, i) => ({
-      src: `/fotos/fb-${p2(i + 1)}.jpg`,
-      legenda: "Memória",
-    })),
+    label: "Todas as memórias",
+    photos: [...FOTO_PHOTOS, ...HEIC_PHOTOS],
   },
 ];
 
@@ -631,9 +633,9 @@ function SlideMusicIntro() {
           boxShadow: "0 28px 72px rgba(0,0,0,.7)",
         }}>
           <img
-            src="/fotos/casal-01.jpg"
+            src="/fotos/foto-001.jpg"
             alt="nós"
-            onError={e => { (e.target as HTMLImageElement).src = "/fotos/casal-02.jpg"; }}
+            onError={e => { (e.target as HTMLImageElement).src = "/fotos/foto-002.jpg"; }}
             style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
           />
         </div>
