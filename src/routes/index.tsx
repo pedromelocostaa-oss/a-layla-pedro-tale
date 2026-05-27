@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import coupleFestival from "../assets/couple-festival.jpg";
 import coupleDinner from "../assets/couple-dinner.jpg";
 
@@ -276,6 +276,11 @@ const GCSS = `
   @keyframes fade-up   { 0%{transform:translateY(16px);opacity:0} 100%{transform:translateY(0);opacity:1} }
   @keyframes glow-pulse{ 0%,100%{box-shadow:0 0 18px ${PINK}44} 50%{box-shadow:0 0 36px ${PINK}88} }
   @keyframes eq-bar    { 0%{transform:scaleY(.2)} 100%{transform:scaleY(1)} }
+  @keyframes heart-fall {
+    0%   { transform: translateY(0)     translateX(0)            rotate(-10deg); opacity: 1; }
+    80%  { opacity: .9; }
+    100% { transform: translateY(120vh) translateX(var(--drift)) rotate(20deg);  opacity: 0; }
+  }
 `;
 
 // ── App root ──────────────────────────────────────────────────────────────────
@@ -1247,11 +1252,64 @@ function PageHistoria({ onStopMusic }: { onStopMusic: () => void }) {
   );
 }
 
+// ── Chuva de corações ─────────────────────────────────────────────────────────
+
+function HeartRain() {
+  const EMOJIS = ["❤️", "💕", "💖", "💗", "💓"];
+  const hearts = useMemo(() =>
+    Array.from({ length: 32 }, (_, i) => ({
+      id: i,
+      left:     Math.random() * 100,
+      delay:    Math.random() * 5,
+      duration: 4.5 + Math.random() * 4,
+      size:     16  + Math.random() * 20,
+      drift:    (Math.random() - 0.5) * 90,
+      emoji:    EMOJIS[Math.floor(Math.random() * EMOJIS.length)],
+    }))
+  , []);
+
+  return (
+    <div style={{ position: "fixed", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 300 }}>
+      {hearts.map(h => (
+        <span
+          key={h.id}
+          style={{
+            position: "absolute",
+            left: `${h.left}%`,
+            top: -50,
+            fontSize: h.size,
+            lineHeight: 1,
+            animation: `heart-fall ${h.duration}s ${h.delay}s ease-in both`,
+            "--drift": `${h.drift}px`,
+          } as React.CSSProperties}
+        >
+          {h.emoji}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 // ── Encerramento ──────────────────────────────────────────────────────────────
 
 function PageFim() {
+  const [active, setActive] = useState(false);
+  const ref = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setActive(true); },
+      { threshold: 0.25 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
   return (
-    <section style={{ padding: "80px 32px 100px", textAlign: "center", position: "relative", overflow: "hidden" }}>
+    <section ref={ref} style={{ padding: "80px 32px 100px", textAlign: "center", position: "relative", overflow: "hidden" }}>
+      {active && <HeartRain />}
       <div aria-hidden style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse at 50% 30%,${PINK}18,transparent 60%)`, pointerEvents: "none" }} />
       <div style={{ position: "relative" }}>
         <p style={{ fontFamily: PF, fontSize: 36, fontWeight: 900, color: "#fff", lineHeight: 1.35, marginBottom: 24 }}>
