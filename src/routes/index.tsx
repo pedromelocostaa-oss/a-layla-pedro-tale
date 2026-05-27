@@ -19,6 +19,7 @@ const GREEN  = "#5DCAA5";
 const PURPLE = "#7F77DD";
 const GOLD   = "#FAC775";
 const PF     = "'Playfair Display', Georgia, serif";
+const MO     = "'Montserrat', Arial, sans-serif";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -214,9 +215,9 @@ function useShuffledPhotos() {
 // ── Global CSS ────────────────────────────────────────────────────────────────
 
 const GCSS = `
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Montserrat:wght@400;500;600;700;800;900&display=swap');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #0d0d0d; }
+  body { background: #0d0d0d; font-family: 'Montserrat', Arial, sans-serif; }
   @keyframes pulse-op  { 0%,100%{opacity:.35} 50%{opacity:.9} }
   @keyframes bounce-y  { 0%,100%{transform:translateY(0)} 50%{transform:translateY(7px)} }
   @keyframes shimmer   { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
@@ -249,7 +250,7 @@ function App() {
   return (
     <>
       <style>{GCSS}</style>
-      <div style={{ maxWidth: 430, margin: "0 auto", minHeight: "100dvh", background: "#0d0d0d", position: "relative", fontFamily: "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" }}>
+      <div style={{ maxWidth: 430, margin: "0 auto", minHeight: "100dvh", background: "#0d0d0d", position: "relative", fontFamily: MO }}>
         <div style={{ opacity: alpha, transition: `opacity ${screen === "stories" ? ".42s" : ".6s"} ease` }}>
           {screen === "lock"    && <LockScreen    onUnlock={() => fadeTo(() => setScreen("unlock"))} />}
           {screen === "unlock"  && <UnlockMessage onStart={()  => fadeTo(() => setScreen("stories"))} />}
@@ -510,7 +511,7 @@ function SlideCounter() {
 
       <div style={{ marginBottom: 18 }}>
         <div style={{ fontFamily: PF, fontSize: 90, fontWeight: 900, color: GREEN, lineHeight: 1, letterSpacing: "-3px" }}>{t.years}</div>
-        <div style={{ color: "rgba(255,255,255,.38)", fontSize: 11, letterSpacing: "3px", textTransform: "uppercase", marginTop: 2 }}>anos</div>
+        <div style={{ color: "rgba(255,255,255,.38)", fontSize: 11, letterSpacing: "3px", textTransform: "uppercase", marginTop: 2, fontFamily: MO }}>anos</div>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
@@ -521,15 +522,15 @@ function SlideCounter() {
           { v: pad(t.m),      l: "minutos" },
         ].map(c => (
           <div key={c.l} style={{ background: "rgba(255,255,255,.05)", borderRadius: 14, padding: "12px 16px" }}>
-            <div style={{ fontFamily: PF, fontSize: 30, fontWeight: 700, color: "#fff", lineHeight: 1 }}>{c.v}</div>
-            <div style={{ color: "rgba(255,255,255,.32)", fontSize: 10, letterSpacing: "2px", textTransform: "uppercase", marginTop: 3 }}>{c.l}</div>
+            <div style={{ fontFamily: MO, fontSize: 30, fontWeight: 800, color: "#fff", lineHeight: 1 }}>{c.v}</div>
+            <div style={{ color: "rgba(255,255,255,.32)", fontSize: 10, letterSpacing: "2px", textTransform: "uppercase", marginTop: 3, fontFamily: MO }}>{c.l}</div>
           </div>
         ))}
       </div>
 
       <div style={{ background: "rgba(255,255,255,.04)", borderRadius: 14, padding: "12px 16px", display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
-        <div style={{ fontFamily: PF, fontSize: 40, fontWeight: 700, color: PINK, lineHeight: 1 }}>{pad(t.s)}</div>
-        <div style={{ color: "rgba(255,255,255,.32)", fontSize: 10, letterSpacing: "2px", textTransform: "uppercase" }}>segundos</div>
+        <div style={{ fontFamily: MO, fontSize: 40, fontWeight: 800, color: PINK, lineHeight: 1 }}>{pad(t.s)}</div>
+        <div style={{ color: "rgba(255,255,255,.32)", fontSize: 10, letterSpacing: "2px", textTransform: "uppercase", fontFamily: MO }}>segundos</div>
       </div>
 
       <p style={{ color: "rgba(255,255,255,.22)", fontSize: 13, fontStyle: "italic", fontFamily: PF, lineHeight: 1.55, marginTop: "auto" }}>
@@ -706,8 +707,8 @@ function PageHero({ onBack }: { onBack: () => void }) {
         {cells.map((c, i) => (
           <div key={c.l} style={{ display: "flex", alignItems: "baseline" }}>
             {i > 0 && <span style={{ color: "rgba(255,255,255,.13)", margin: "0 5px" }}>·</span>}
-            <span style={{ fontFamily: PF, fontWeight: 900, fontSize: c.big ? 22 : 16, color: c.big ? GREEN : "#fff" }}>{c.v}</span>
-            <span style={{ color: "rgba(255,255,255,.28)", fontSize: 10, marginLeft: 3 }}>{c.l}</span>
+            <span style={{ fontFamily: c.big ? PF : MO, fontWeight: 900, fontSize: c.big ? 22 : 16, color: c.big ? GREEN : "#fff" }}>{c.v}</span>
+            <span style={{ color: "rgba(255,255,255,.28)", fontSize: 10, marginLeft: 3, fontFamily: MO }}>{c.l}</span>
           </div>
         ))}
       </div>
@@ -760,7 +761,7 @@ function AchCard({ a, locked }: { a: Achievement; locked?: boolean }) {
       {locked && <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(105deg,transparent 40%,rgba(255,255,255,.025) 50%,transparent 60%)", backgroundSize: "200% 100%", animation: "shimmer 2.6s infinite linear" }} />}
       <div style={{ fontSize: 20 }}>{a.emoji}</div>
       {locked && <div style={{ fontSize: 9 }}>🔒</div>}
-      <div style={{ color: locked ? "#555" : "#fff", fontSize: 9, fontWeight: 800, textAlign: "center", lineHeight: 1.3 }}>{a.name}</div>
+      <div style={{ color: locked ? "#555" : "#fff", fontSize: 9, fontWeight: 700, textAlign: "center", lineHeight: 1.3, fontFamily: MO }}>{a.name}</div>
     </div>
   );
 }
@@ -883,8 +884,8 @@ function PageBuilt() {
         {items.map(it => (
           <div key={it.t} style={{ background: "#141428", border: `1px solid ${PURPLE}22`, borderRadius: 16, padding: "16px 14px" }}>
             <div style={{ fontSize: 26, marginBottom: 8 }}>{it.e}</div>
-            <div style={{ color: "#fff", fontSize: 13, fontWeight: 800, marginBottom: 4 }}>{it.t}</div>
-            <div style={{ color: "rgba(255,255,255,.38)", fontSize: 11, lineHeight: 1.45 }}>{it.d}</div>
+            <div style={{ color: "#fff", fontSize: 13, fontWeight: 700, marginBottom: 4, fontFamily: MO }}>{it.t}</div>
+            <div style={{ color: "rgba(255,255,255,.38)", fontSize: 11, lineHeight: 1.45, fontFamily: MO }}>{it.d}</div>
           </div>
         ))}
       </div>
@@ -915,5 +916,5 @@ function SecTitle({ children }: { children: React.ReactNode }) {
 }
 
 function SmLabel({ children, dim }: { children: React.ReactNode; dim?: boolean }) {
-  return <div style={{ color: dim ? "rgba(255,255,255,.2)" : "rgba(255,255,255,.35)", fontSize: 10, fontWeight: 800, letterSpacing: "1.5px", marginBottom: 12 }}>{children}</div>;
+  return <div style={{ color: dim ? "rgba(255,255,255,.2)" : "rgba(255,255,255,.35)", fontSize: 10, fontWeight: 700, letterSpacing: "1.5px", marginBottom: 12, fontFamily: MO }}>{children}</div>;
 }
