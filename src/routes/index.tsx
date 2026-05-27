@@ -1094,7 +1094,7 @@ function PageGallery() {
           </div>
 
           <div style={{ flex: 1, position: "relative" }}>
-            <PhotoImg photo={lbPhoto} fill />
+            <PhotoImg photo={lbPhoto} fill contain />
           </div>
 
           <div style={{ padding: "14px 20px 36px", background: "linear-gradient(transparent,rgba(0,0,0,.8))", position: "absolute", bottom: 0, left: 0, right: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -1108,10 +1108,10 @@ function PageGallery() {
   );
 }
 
-function PhotoImg({ photo, fill }: { photo: Photo; fill?: boolean }) {
+function PhotoImg({ photo, fill, contain }: { photo: Photo; fill?: boolean; contain?: boolean }) {
   const [err, setErr] = useState(false);
   const s: React.CSSProperties = fill
-    ? { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }
+    ? { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: contain ? "contain" : "cover", display: "block" }
     : { width: "100%", display: "block" };
   return err ? (
     <div style={{ ...s, background: "#1a1a2e", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6 }}>
